@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* =========================
+   ROOT THEME (LIGHT ONLY)
+========================= */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* accent colors */
+  --navy: #0f172a;
+  --green: #15803d;
+}
+
+/* =========================
+   TAILWIND THEME MAPPING
+========================= */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* override fonts */
+  --font-sans: var(--font-iosevka);
+  --font-mono: var(--font-iosevka);
+}
+
+/* =========================
+   BASE STYLES
+========================= */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+
+  /* main font */
+  font-family: var(--font-iosevka), monospace;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================
+   SCROLLBAR (OPTIONAL PREMIUM TOUCH)
+========================= */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00000020;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00000040;
+}

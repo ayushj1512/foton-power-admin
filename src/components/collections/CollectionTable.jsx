@@ -1,0 +1,176 @@
+"use client";
+
+import Link from "next/link";
+import { Edit3, Eye, Home, Loader2, Star, Trash2 } from "lucide-react";
+
+const pill = (active) =>
+  active
+    ? "border-green-200 bg-green-50 text-green-700"
+    : "border-zinc-200 bg-zinc-50 text-zinc-500";
+
+export default function CollectionTable({
+  collections = [],
+  loading = false,
+  actionLoadingId = "",
+  onToggleStatus,
+  onToggleFeatured,
+  onToggleHomepage,
+  onDelete,
+}) {
+  if (loading) {
+    return (
+      <div className="rounded-[28px] border border-zinc-200 bg-white p-10 shadow-sm">
+        <div className="flex items-center justify-center gap-3 text-sm text-zinc-500">
+          <Loader2 size={18} className="animate-spin" />
+          Loading collections...
+        </div>
+      </div>
+    );
+  }
+
+  if (!collections.length) {
+    return (
+      <div className="rounded-[28px] border border-dashed border-zinc-200 bg-white p-10 text-center shadow-sm">
+        <h3 className="text-lg font-semibold text-zinc-900">No collections found</h3>
+        <p className="mt-2 text-sm text-zinc-500">
+          Create your first collection to start organizing products.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left">
+          <thead className="border-b border-zinc-200 bg-zinc-50/80">
+            <tr className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+              <th className="px-5 py-4 font-medium">Collection</th>
+              <th className="px-5 py-4 font-medium">Status</th>
+              <th className="px-5 py-4 font-medium">Flags</th>
+              <th className="px-5 py-4 font-medium">Products</th>
+              <th className="px-5 py-4 font-medium">Updated</th>
+              <th className="px-5 py-4 font-medium text-right">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {collections.map((item) => {
+              const busy = actionLoadingId === item._id;
+              return (
+                <tr key={item._id} className="border-b border-zinc-100 last:border-b-0">
+                  <td className="px-5 py-4 align-top">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
+                        {item?.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-semibold text-zinc-500">CL</span>
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-zinc-900">
+                          {item?.name}
+                        </div>
+                        <div className="mt-1 truncate text-xs text-zinc-500">
+                          /{item?.slug || "-"}
+                        </div>
+                        {item?.description ? (
+                          <p className="mt-2 line-clamp-2 max-w-[360px] text-xs text-zinc-500">
+                            {item.description}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4 align-top">
+                    <button
+                      type="button"
+                      onClick={() => onToggleStatus?.(item)}
+                      className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-medium transition ${pill(
+                        item?.isActive
+                      )}`}
+                    >
+                      {item?.isActive ? "Active" : "Inactive"}
+                    </button>
+                  </td>
+
+                  <td className="px-5 py-4 align-top">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onToggleFeatured?.(item)}
+                        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                          item?.isFeatured
+                            ? "border-amber-200 bg-amber-50 text-amber-700"
+                            : "border-zinc-200 bg-zinc-50 text-zinc-500"
+                        }`}
+                      >
+                        <Star size={12} />
+                        Featured
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onToggleHomepage?.(item)}
+                        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                          item?.showOnHomepage
+                            ? "border-blue-200 bg-blue-50 text-blue-700"
+                            : "border-zinc-200 bg-zinc-50 text-zinc-500"
+                        }`}
+                      >
+                        <Home size={12} />
+                        Homepage
+                      </button>
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4 align-top">
+                    <div className="text-sm font-semibold text-zinc-900">
+                      {Array.isArray(item?.productCodes) ? item.productCodes.length : 0}
+                    </div>
+                    <div className="mt-1 text-xs text-zinc-500">Mapped product codes</div>
+                  </td>
+
+                  <td className="px-5 py-4 align-top">
+                    <div className="text-sm text-zinc-900">
+                      {item?.updatedAt
+                        ? new Date(item.updatedAt).toLocaleDateString()
+                        : "-"}
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4 align-top">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/collections/${item._id}`}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-700 transition hover:bg-zinc-50"
+                      >
+                        <Edit3 size={16} />
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => onDelete?.(item)}
+                        disabled={busy}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+                      >
+                        {busy ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
