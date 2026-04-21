@@ -1,25 +1,51 @@
+"use client";
+
 import { create } from "zustand";
 import toast from "react-hot-toast";
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL;
+const BACKEND =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:9000";
 
 const getAuthHeaders = () => {
   if (typeof window === "undefined") return {};
   const token = localStorage.getItem("adminToken");
-
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
+
+const getItemId = (item = {}) =>
+  String(
+    item?._id ||
+      item?.id ||
+      item?.publicId ||
+      item?.public_id ||
+      item?.assetId ||
+      item?.asset_id ||
+      item?.url ||
+      item?.secureUrl ||
+      item?.secure_url ||
+      ""
+  );
 
 const getUniqueItems = (items = []) =>
   Array.from(
     new Map(
       (Array.isArray(items) ? items : [])
         .filter(Boolean)
-        .map((item) => [item.publicId, item])
+        .map((item) => [getItemId(item), item])
+        .filter(([id]) => id)
     ).values()
   );
+
+const buildQuery = (params = {}) => {
+  const search = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value == null || value === "") return;
+    search.set(key, String(value));
+  });
+
+  return search.toString();
+};
 
 export const useAdminMediaStore = create((set, get) => ({
   items: [],
@@ -30,14 +56,17 @@ export const useAdminMediaStore = create((set, get) => ({
   error: null,
   message: null,
 
-  folder: "",
   resourceType: "image",
   limit: 24,
   nextCursor: null,
   hasMore: true,
   initialized: false,
 
-  clearMessages: () => set({ error: null, message: null }),
+  clearMessages: () =>
+    set({
+      error: null,
+      message: null,
+    }),
 
   resetMediaState: () =>
     set({
@@ -52,7 +81,6 @@ export const useAdminMediaStore = create((set, get) => ({
     }),
 
   fetchMedia: async ({
-    folder = "",
     resourceType = "image",
     limit = 24,
     loadMore = false,
@@ -60,7 +88,7 @@ export const useAdminMediaStore = create((set, get) => ({
     const state = get();
 
     if (loadMore) {
-      if (state.loadingMore || state.loading || !state.hasMore) return;
+      if (state.loading || state.loadingMore || !state.hasMore) return;
       set({ loadingMore: true, error: null });
     } else {
       set({
@@ -72,7 +100,6 @@ export const useAdminMediaStore = create((set, get) => ({
         nextCursor: null,
         hasMore: true,
         initialized: false,
-        folder,
         resourceType,
         limit,
       });
@@ -81,13 +108,13 @@ export const useAdminMediaStore = create((set, get) => ({
     try {
       const cursor = loadMore ? state.nextCursor : null;
 
-      const params = new URLSearchParams();
-      if (folder) params.append("folder", folder);
-      if (resourceType) params.append("resourceType", resourceType);
-      if (limit) params.append("limit", String(limit));
-      if (cursor) params.append("nextCursor", cursor);
+      const query = buildQuery({
+        resourceType,
+        limit,
+        nextCursor: cursor,
+      });
 
-      const res = await fetch(`${BACKEND}/api/cloudinary/media?${params.toString()}`, {
+      const res = await fetch(`${BACKEND}/api/cloudinary/media?${query}`, {
         method: "GET",
         headers: {
           ...getAuthHeaders(),
@@ -109,7 +136,6 @@ export const useAdminMediaStore = create((set, get) => ({
         loading: false,
         loadingMore: false,
         initialized: true,
-        folder,
         resourceType,
         limit,
         nextCursor: data?.nextCursor || null,
@@ -128,25 +154,28 @@ export const useAdminMediaStore = create((set, get) => ({
     }
   },
 
+  refreshMedia: async () => {
+    const { resourceType, limit } = get();
+    await get().fetchMedia({
+      resourceType,
+      limit,
+      loadMore: false,
+    });
+  },
+
   loadMoreMedia: async () => {
-    const { folder, resourceType, limit, hasMore, loading, loadingMore } = get();
+    const { resourceType, limit, hasMore, loading, loadingMore } = get();
+
     if (!hasMore || loading || loadingMore) return;
 
     await get().fetchMedia({
-      folder,
       resourceType,
       limit,
       loadMore: true,
     });
   },
 
-  uploadSingleMedia: async ({
-    file,
-    channel = "general",
-    section = "",
-    subSection = "",
-    publicId = "",
-  }) => {
+  uploadSingleMedia: async ({ file, publicId = "" }) => {
     if (!file) {
       const msg = "File is required";
       set({ error: msg });
@@ -159,10 +188,7 @@ export const useAdminMediaStore = create((set, get) => ({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("channel", channel);
-      formData.append("section", section);
-      formData.append("subSection", subSection);
-      formData.append("publicId", publicId);
+      if (publicId) formData.append("publicId", publicId);
 
       const res = await fetch(`${BACKEND}/api/cloudinary/upload`, {
         method: "POST",
@@ -198,12 +224,7 @@ export const useAdminMediaStore = create((set, get) => ({
     }
   },
 
-  uploadMedia: async ({
-    files = [],
-    channel = "general",
-    section = "",
-    subSection = "",
-  }) => {
+  uploadMedia: async ({ files = [] }) => {
     if (!Array.isArray(files) || files.length === 0) {
       const msg = "Files are required";
       set({ error: msg });
@@ -215,14 +236,7 @@ export const useAdminMediaStore = create((set, get) => ({
 
     try {
       const formData = new FormData();
-
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-
-      formData.append("channel", channel);
-      formData.append("section", section);
-      formData.append("subSection", subSection);
+      files.forEach((file) => formData.append("files", file));
 
       const res = await fetch(`${BACKEND}/api/cloudinary/upload-multiple`, {
         method: "POST",
@@ -288,7 +302,10 @@ export const useAdminMediaStore = create((set, get) => ({
       set((state) => ({
         deleting: false,
         message: data?.message || "File deleted successfully",
-        items: (state.items || []).filter((item) => item?.publicId !== publicId),
+        items: (state.items || []).filter(
+          (item) =>
+            String(item?.publicId || item?.public_id || "") !== String(publicId)
+        ),
       }));
 
       toast.success(data?.message || "File deleted successfully");
@@ -302,7 +319,9 @@ export const useAdminMediaStore = create((set, get) => ({
   },
 
   setItems: (items = []) => {
-    set({ items: Array.isArray(items) ? getUniqueItems(items) : [] });
+    set({
+      items: Array.isArray(items) ? getUniqueItems(items) : [],
+    });
   },
 
   addItem: (item) => {
@@ -321,7 +340,10 @@ export const useAdminMediaStore = create((set, get) => ({
 
   removeItemByPublicId: (publicId) => {
     set((state) => ({
-      items: (state.items || []).filter((item) => item?.publicId !== publicId),
+      items: (state.items || []).filter(
+        (item) =>
+          String(item?.publicId || item?.public_id || "") !== String(publicId)
+      ),
     }));
   },
 }));

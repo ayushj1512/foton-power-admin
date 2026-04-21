@@ -1,48 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import { Plus, Search, Pencil, Trash2, Eye, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useAdminCategoryStore } from "@/store/adminCategoryStore";
 
-export default function CategoriesPage() {
-  const {
-    categories,
-    isLoading,
-    error,
-    message,
-    filters,
-    setFilters,
-    clearMessages,
-    fetchCategories,
-    toggleCategoryStatus,
-    deleteCategory,
-  } = useAdminCategoryStore();
+const initialForm = {
+  name: "",
+  code: "",
+  slug: "",
+  description: "",
+  image: "",
+  bannerImage: "",
+  sortOrder: 0,
+  isActive: true,
+  isFeatured: false,
+  seoTitle: "",
+  seoDescription: "",
+};
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+export default function CreateCategoryPage() {
+  const router = useRouter();
+  const { createCategory, isLoading, error, message, clearMessages } =
+    useAdminCategoryStore();
 
-  const handleSearch = (e) => {
-    setFilters({ search: e.target.value });
+  const [form, setForm] = useState(initialForm);
+
+  const handleChange = (key, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
-  const handleApplyFilters = () => {
-    fetchCategories({ page: 1 });
-  };
-
-  const handleToggle = async (id) => {
-    try {
-      await toggleCategoryStatus(id);
-    } catch {}
-  };
-
-  const handleDelete = async (id) => {
-    const ok = window.confirm("Delete this category?");
-    if (!ok) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    clearMessages();
 
     try {
-      await deleteCategory(id);
+      const payload = {
+        ...form,
+        sortOrder: Number(form.sortOrder) || 0,
+      };
+
+      await createCategory(payload);
+      router.push("/categories");
     } catch {}
   };
 
@@ -51,28 +54,22 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 rounded-3xl border border-black/10 bg-white p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-black">Categories</h1>
-          <p className="text-sm text-black/60">
-            Manage all categories and subcategories here
-          </p>
-        </div>
+          <div className="mb-2">
+            <Link
+              href="/categories"
+              className="inline-flex items-center gap-2 text-sm text-black/60 transition hover:text-black"
+            >
+              <ArrowLeft size={16} />
+              Back to Categories
+            </Link>
+          </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => fetchCategories()}
-            className="inline-flex items-center gap-2 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition hover:bg-black/5"
-          >
-            <RefreshCw size={16} />
-            Refresh
-          </button>
-
-          <Link
-            href="/categories/create"
-            className="inline-flex items-center gap-2 rounded-2xl bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-          >
-            <Plus size={16} />
+          <h1 className="text-2xl font-semibold text-black">
             Create Category
-          </Link>
+          </h1>
+          <p className="text-sm text-black/60">
+            Add a new category with basic details and SEO fields
+          </p>
         </div>
       </div>
 
@@ -99,207 +96,233 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="grid gap-4 rounded-3xl border border-black/10 bg-white p-5 shadow-sm md:grid-cols-4">
-        <div className="md:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-black">
-            Search
-          </label>
-          <div className="flex items-center gap-2 rounded-2xl border border-black/10 px-3">
-            <Search size={16} className="text-black/50" />
-            <input
-              type="text"
-              value={filters.search}
-              onChange={handleSearch}
-              placeholder="Search by name, slug, code..."
-              className="w-full bg-transparent py-3 text-sm outline-none"
-            />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Details */}
+        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-black">Basic Details</h2>
+            <p className="text-sm text-black/60">
+              Main category information
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                Category Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                placeholder="Enter category name"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                Code
+              </label>
+              <input
+                type="text"
+                value={form.code}
+                onChange={(e) => handleChange("code", e.target.value)}
+                placeholder="Enter category code"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                Slug
+              </label>
+              <input
+                type="text"
+                value={form.slug}
+                onChange={(e) => handleChange("slug", e.target.value)}
+                placeholder="Enter category slug"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                Sort Order
+              </label>
+              <input
+                type="number"
+                value={form.sortOrder}
+                onChange={(e) => handleChange("sortOrder", e.target.value)}
+                placeholder="0"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-black">
+                Description
+              </label>
+              <textarea
+                rows={4}
+                value={form.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                placeholder="Enter category description"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
           </div>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-black">
-            Status
-          </label>
-          <select
-            value={filters.isActive}
-            onChange={(e) => setFilters({ isActive: e.target.value })}
-            className="w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none"
-          >
-            <option value="">All</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
+        {/* Media */}
+        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-black">Media</h2>
+            <p className="text-sm text-black/60">
+              Add image URLs for category
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                Image URL
+              </label>
+              <input
+                type="text"
+                value={form.image}
+                onChange={(e) => handleChange("image", e.target.value)}
+                placeholder="https://example.com/category-image.jpg"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                Banner Image URL
+              </label>
+              <input
+                type="text"
+                value={form.bannerImage}
+                onChange={(e) => handleChange("bannerImage", e.target.value)}
+                placeholder="https://example.com/banner-image.jpg"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-black">
-            Featured
-          </label>
-          <select
-            value={filters.isFeatured}
-            onChange={(e) => setFilters({ isFeatured: e.target.value })}
-            className="w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none"
-          >
-            <option value="">All</option>
-            <option value="true">Featured</option>
-            <option value="false">Not Featured</option>
-          </select>
+        {/* SEO */}
+        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-black">SEO</h2>
+            <p className="text-sm text-black/60">
+              Optional SEO metadata for category page
+            </p>
+          </div>
+
+          <div className="grid gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                SEO Title
+              </label>
+              <input
+                type="text"
+                value={form.seoTitle}
+                onChange={(e) => handleChange("seoTitle", e.target.value)}
+                placeholder="Enter SEO title"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-black">
+                SEO Description
+              </label>
+              <textarea
+                rows={4}
+                value={form.seoDescription}
+                onChange={(e) =>
+                  handleChange("seoDescription", e.target.value)
+                }
+                placeholder="Enter SEO description"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/20"
+              />
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-black">
-            Sort By
-          </label>
-          <select
-            value={filters.sortBy}
-            onChange={(e) => setFilters({ sortBy: e.target.value })}
-            className="w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none"
-          >
-            <option value="sortOrder">Sort Order</option>
-            <option value="name">Name</option>
-            <option value="createdAt">Created At</option>
-            <option value="updatedAt">Updated At</option>
-          </select>
+        {/* Settings */}
+        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold text-black">Settings</h2>
+            <p className="text-sm text-black/60">
+              Control visibility and homepage priority
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="flex items-center justify-between rounded-2xl border border-black/10 px-4 py-4">
+              <div>
+                <p className="text-sm font-medium text-black">Active</p>
+                <p className="text-xs text-black/50">
+                  Show this category publicly
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.isActive}
+                onChange={(e) => handleChange("isActive", e.target.checked)}
+                className="h-4 w-4"
+              />
+            </label>
+
+            <label className="flex items-center justify-between rounded-2xl border border-black/10 px-4 py-4">
+              <div>
+                <p className="text-sm font-medium text-black">Featured</p>
+                <p className="text-xs text-black/50">
+                  Highlight this category
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={form.isFeatured}
+                onChange={(e) => handleChange("isFeatured", e.target.checked)}
+                className="h-4 w-4"
+              />
+            </label>
+          </div>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-black">
-            Sort Order
-          </label>
-          <select
-            value={filters.sortOrder}
-            onChange={(e) => setFilters({ sortOrder: e.target.value })}
-            className="w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none"
+        {/* Actions */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <Link
+            href="/categories"
+            className="inline-flex items-center justify-center rounded-2xl border border-black/10 px-5 py-3 text-sm font-medium text-black transition hover:bg-black/5"
           >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div>
+            Cancel
+          </Link>
 
-        <div className="flex items-end">
           <button
-            onClick={handleApplyFilters}
-            className="w-full rounded-2xl bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+            type="submit"
+            disabled={isLoading}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Apply Filters
+            {isLoading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Save size={16} />
+                Create Category
+              </>
+            )}
           </button>
         </div>
-      </div>
-
-      {/* Table / Cards */}
-      <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
-        {isLoading ? (
-          <div className="py-16 text-center text-sm text-black/60">
-            Loading categories...
-          </div>
-        ) : categories?.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-sm text-black/60">No categories found</p>
-            <Link
-              href="/categories/create"
-              className="mt-4 inline-flex rounded-2xl bg-black px-4 py-2 text-sm font-medium text-white"
-            >
-              Create First Category
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left">
-              <thead className="border-b border-black/10 text-sm text-black/60">
-                <tr>
-                  <th className="px-3 py-3 font-medium">Category</th>
-                  <th className="px-3 py-3 font-medium">Code</th>
-                  <th className="px-3 py-3 font-medium">Subcategories</th>
-                  <th className="px-3 py-3 font-medium">Status</th>
-                  <th className="px-3 py-3 font-medium">Featured</th>
-                  <th className="px-3 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {categories.map((item) => (
-                  <tr key={item._id} className="border-b border-black/5">
-                    <td className="px-3 py-4">
-                      <div className="flex items-center gap-3">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="h-12 w-12 rounded-xl object-cover border border-black/10"
-                          />
-                        ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-black/10 bg-black/5 text-xs text-black/50">
-                            NA
-                          </div>
-                        )}
-
-                        <div>
-                          <p className="font-medium text-black">{item.name}</p>
-                          <p className="text-xs text-black/50">{item.slug}</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-3 py-4 text-sm text-black/70">
-                      {item.code || "—"}
-                    </td>
-
-                    <td className="px-3 py-4 text-sm text-black/70">
-                      {item.subcategories?.length || 0}
-                    </td>
-
-                    <td className="px-3 py-4">
-                      <button
-                        onClick={() => handleToggle(item._id)}
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${
-                          item.isActive
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {item.isActive ? "Active" : "Inactive"}
-                      </button>
-                    </td>
-
-                    <td className="px-3 py-4 text-sm text-black/70">
-                      {item.isFeatured ? "Yes" : "No"}
-                    </td>
-
-                    <td className="px-3 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          href={`/categories/${item.slug}`}
-                          className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 text-xs font-medium text-black transition hover:bg-black/5"
-                        >
-                          <Eye size={14} />
-                          View
-                        </Link>
-
-                        <Link
-                          href={`/categories/${item.slug}`}
-                          className="inline-flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 text-xs font-medium text-black transition hover:bg-black/5"
-                        >
-                          <Pencil size={14} />
-                          Manage
-                        </Link>
-
-                        <button
-                          onClick={() => handleDelete(item._id)}
-                          className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition hover:bg-red-50"
-                        >
-                          <Trash2 size={14} />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      </form>
     </div>
   );
 }

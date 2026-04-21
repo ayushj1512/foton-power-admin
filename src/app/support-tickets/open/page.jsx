@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   AlertCircle,
   ChevronRight,
-  LifeBuoy,
+  Clock3,
   Loader2,
   Mail,
   Phone,
@@ -15,14 +15,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useAdminSupportTicketStore } from "@/store/adminSupportTicketStore";
-
-const STATUS_OPTIONS = [
-  { label: "All", value: "" },
-  { label: "Open", value: "open" },
-  { label: "In Progress", value: "in_progress" },
-  { label: "Resolved", value: "resolved" },
-  { label: "Closed", value: "closed" },
-];
 
 const statusStyles = {
   open: "bg-emerald-50 text-emerald-700",
@@ -80,7 +72,7 @@ const StatCard = ({ icon: Icon, title, value, hint }) => (
   </div>
 );
 
-export default function SupportTicketsPage() {
+export default function OpenSupportTicketsPage() {
   const {
     tickets,
     isLoading,
@@ -93,28 +85,31 @@ export default function SupportTicketsPage() {
   } = useAdminSupportTicketStore();
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
 
   useEffect(() => {
-    fetchTickets().catch(() => {});
+    fetchTickets({ status: "open" }).catch(() => {});
   }, [fetchTickets]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchTickets({ search, status }).catch(() => {});
+      fetchTickets({ status: "open", search }).catch(() => {});
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [search, status, fetchTickets]);
+  }, [search, fetchTickets]);
+
+  const openTickets = useMemo(
+    () => tickets.filter((ticket) => getStatus(ticket) === "open"),
+    [tickets]
+  );
 
   const stats = useMemo(() => {
-    const total = tickets.length;
-    const open = tickets.filter((t) => getStatus(t) === "open").length;
-    const progress = tickets.filter((t) => getStatus(t) === "in_progress").length;
-    const resolved = tickets.filter((t) => getStatus(t) === "resolved").length;
+    const total = openTickets.length;
+    const withEmail = openTickets.filter((ticket) => getEmail(ticket) !== "—").length;
+    const withPhone = openTickets.filter((ticket) => getPhone(ticket) !== "—").length;
 
-    return { total, open, progress, resolved };
-  }, [tickets]);
+    return { total, withEmail, withPhone };
+  }, [openTickets]);
 
   const handleStatusChange = async (id, nextStatus) => {
     try {
@@ -123,7 +118,7 @@ export default function SupportTicketsPage() {
   };
 
   const handleDelete = async (id) => {
-    const ok = window.confirm("Delete this ticket?");
+    const ok = window.confirm("Delete this open ticket?");
     if (!ok) return;
 
     try {
@@ -134,39 +129,47 @@ export default function SupportTicketsPage() {
   return (
     <div className="min-h-screen bg-[#f6f6f4] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       <div className="space-y-6">
-        <section className="rounded-[30px] bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 px-6 py-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:px-7 sm:py-7">
+        <section className="rounded-[30px] bg-gradient-to-br from-emerald-950 via-zinc-900 to-zinc-800 px-6 py-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:px-7 sm:py-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80 ring-1 ring-white/10">
-                <LifeBuoy className="h-3.5 w-3.5" />
-                Support tickets
+                <AlertCircle className="h-3.5 w-3.5" />
+                Open support tickets
               </div>
               <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Customer support workspace
+                Open ticket queue
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-white/70 sm:text-base">
-                Review, update, and close customer support tickets from one clean dashboard.
+                Review fresh customer issues quickly and move them into progress or resolve them.
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                clearMessages();
-                fetchTickets({ search, status }).catch(() => {});
-              }}
-              className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/15"
-            >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-              Refresh
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/support-tickets"
+                className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/15"
+              >
+                All tickets
+              </Link>
+
+              <button
+                onClick={() => {
+                  clearMessages();
+                  fetchTickets({ status: "open", search }).catch(() => {});
+                }}
+                className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                Refresh
+              </button>
+            </div>
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard icon={Ticket} title="Loaded tickets" value={stats.total} hint="Current filtered result" />
-          <StatCard icon={AlertCircle} title="Open" value={stats.open} hint="Needs attention" />
-          <StatCard icon={Loader2} title="In progress" value={stats.progress} hint="Being handled" />
-          <StatCard icon={LifeBuoy} title="Resolved" value={stats.resolved} hint="Completed queries" />
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <StatCard icon={Ticket} title="Open tickets" value={stats.total} hint="Needs action" />
+          <StatCard icon={Mail} title="With email" value={stats.withEmail} hint="Contactable by mail" />
+          <StatCard icon={Phone} title="With phone" value={stats.withPhone} hint="Contactable by call" />
         </section>
 
         {(error || message) && (
@@ -182,39 +185,14 @@ export default function SupportTicketsPage() {
         )}
 
         <section className="rounded-[28px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-black/5 sm:p-5">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
-            <div className="relative lg:col-span-8">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name, email, subject..."
-                className="h-12 w-full rounded-2xl bg-zinc-50 pl-11 pr-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 transition focus:bg-white focus:ring-zinc-300"
-              />
-            </div>
-
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="h-12 rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-3"
-            >
-              {STATUS_OPTIONS.map((item) => (
-                <option key={item.value || "all"} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={() => {
-                setSearch("");
-                setStatus("");
-                fetchTickets({ search: "", status: "" }).catch(() => {});
-              }}
-              className="h-12 rounded-2xl bg-zinc-100 px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-200 lg:col-span-1"
-            >
-              Reset
-            </button>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search open tickets by name, email, subject..."
+              className="h-12 w-full rounded-2xl bg-zinc-50 pl-11 pr-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 transition focus:bg-white focus:ring-zinc-300"
+            />
           </div>
         </section>
 
@@ -222,10 +200,10 @@ export default function SupportTicketsPage() {
           <div className="flex items-center justify-between px-5 py-4">
             <div>
               <h2 className="text-lg font-semibold tracking-tight text-zinc-950">
-                All tickets
+                Open tickets
               </h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Open the ticket detail page for full context and actions
+                Priority queue for unresolved support requests
               </p>
             </div>
           </div>
@@ -235,29 +213,29 @@ export default function SupportTicketsPage() {
               <div className="col-span-3">Customer</div>
               <div className="col-span-3">Subject</div>
               <div className="col-span-2">Contact</div>
-              <div className="col-span-2">Status</div>
+              <div className="col-span-2">Created</div>
               <div className="col-span-2 text-right">Actions</div>
             </div>
 
             {isLoading ? (
               <div className="flex items-center justify-center px-5 py-16 text-zinc-500">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Loading tickets...
+                Loading open tickets...
               </div>
-            ) : tickets.length === 0 ? (
+            ) : openTickets.length === 0 ? (
               <div className="px-5 py-16 text-center">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500">
                   <Ticket className="h-6 w-6" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-zinc-900">
-                  No support tickets found
+                  No open tickets found
                 </h3>
                 <p className="mt-2 text-sm text-zinc-500">
-                  Matching results will appear here.
+                  Fresh unresolved tickets will show up here.
                 </p>
               </div>
             ) : (
-              tickets.map((ticket) => (
+              openTickets.map((ticket) => (
                 <div
                   key={ticket._id}
                   className="grid grid-cols-12 gap-4 px-5 py-4 transition hover:bg-zinc-50/70"
@@ -282,33 +260,26 @@ export default function SupportTicketsPage() {
 
                   <div className="col-span-2">
                     <p className="text-sm text-zinc-900">{getPhone(ticket)}</p>
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {formatDate(ticket.createdAt)}
-                    </p>
+                    <span className="mt-2 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                      Open
+                    </span>
                   </div>
 
                   <div className="col-span-2">
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                        statusStyles[getStatus(ticket)] || "bg-zinc-100 text-zinc-700"
-                      }`}
-                    >
-                      {getStatus(ticket).replace("_", " ")}
-                    </span>
-
-                    <select
-                      value={getStatus(ticket)}
-                      onChange={(e) => handleStatusChange(ticket._id, e.target.value)}
-                      className="mt-2 h-10 w-full rounded-2xl bg-zinc-50 px-3 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300"
-                    >
-                      <option value="open">Open</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
-                      <option value="closed">Closed</option>
-                    </select>
+                    <div className="flex items-center gap-2 text-sm text-zinc-700">
+                      <Clock3 className="h-4 w-4 text-zinc-400" />
+                      <span>{formatDate(ticket.createdAt)}</span>
+                    </div>
                   </div>
 
                   <div className="col-span-2 flex items-start justify-end gap-2">
+                    <button
+                      onClick={() => handleStatusChange(ticket._id, "in_progress")}
+                      className="inline-flex items-center rounded-2xl bg-amber-50 px-3.5 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-100"
+                    >
+                      Start
+                    </button>
+
                     <Link
                       href={`/support-tickets/${ticket._id}`}
                       className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
@@ -333,19 +304,19 @@ export default function SupportTicketsPage() {
             {isLoading ? (
               <div className="flex items-center justify-center rounded-3xl bg-zinc-50 px-4 py-12 text-zinc-500">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Loading tickets...
+                Loading open tickets...
               </div>
-            ) : tickets.length === 0 ? (
+            ) : openTickets.length === 0 ? (
               <div className="rounded-3xl bg-zinc-50 px-4 py-12 text-center">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-zinc-500 ring-1 ring-zinc-200">
                   <Ticket className="h-6 w-6" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-zinc-900">
-                  No support tickets found
+                  No open tickets found
                 </h3>
               </div>
             ) : (
-              tickets.map((ticket) => (
+              openTickets.map((ticket) => (
                 <div
                   key={ticket._id}
                   className="rounded-3xl bg-zinc-50 p-4 ring-1 ring-zinc-200/70"
@@ -377,26 +348,26 @@ export default function SupportTicketsPage() {
                       <Phone className="h-4 w-4" />
                       <span>{getPhone(ticket)}</span>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Clock3 className="h-4 w-4" />
+                      <span>{formatDate(ticket.createdAt)}</span>
+                    </div>
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleStatusChange(ticket._id, "in_progress")}
+                      className="rounded-2xl bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-100"
+                    >
+                      Start progress
+                    </button>
+
                     <Link
                       href={`/support-tickets/${ticket._id}`}
                       className="rounded-2xl bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
                     >
                       Open
                     </Link>
-
-                    <select
-                      value={getStatus(ticket)}
-                      onChange={(e) => handleStatusChange(ticket._id, e.target.value)}
-                      className="h-10 rounded-2xl bg-white px-3 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:ring-zinc-300"
-                    >
-                      <option value="open">Open</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
-                      <option value="closed">Closed</option>
-                    </select>
 
                     <button
                       onClick={() => handleDelete(ticket._id)}

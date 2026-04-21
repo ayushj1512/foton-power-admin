@@ -4,7 +4,8 @@ import { useEffect, useMemo } from "react";
 import { Check, ChevronDown, Layers3, Loader2, X } from "lucide-react";
 import { useAdminCollectionStore } from "@/store/adminCollectionStore";
 
-const toArray = (value) => (Array.isArray(value) ? value : value ? [value] : []);
+const toArray = (value) =>
+  Array.isArray(value) ? value : value ? [value] : [];
 
 export default function CollectionDropdown({
   value = "",
@@ -65,8 +66,8 @@ export default function CollectionDropdown({
 
   const selectedItems = useMemo(() => {
     if (!selectedValues.length) return [];
-    const set = new Set(selectedValues.map(String));
-    return options.filter((item) => set.has(String(item._id)));
+    const selectedSet = new Set(selectedValues.map(String));
+    return options.filter((item) => selectedSet.has(String(item?._id)));
   }, [options, selectedValues]);
 
   const handleSingleChange = (nextValue) => {
@@ -76,7 +77,9 @@ export default function CollectionDropdown({
   const handleMultiChange = (nextValue) => {
     if (!nextValue) return;
 
-    const exists = selectedValues.some((item) => String(item) === String(nextValue));
+    const exists = selectedValues.some(
+      (item) => String(item) === String(nextValue)
+    );
     if (exists) return;
 
     onChange?.([...selectedValues, nextValue]);
@@ -84,7 +87,9 @@ export default function CollectionDropdown({
 
   const removeSelected = (id) => {
     if (multiple) {
-      onChange?.(selectedValues.filter((item) => String(item) !== String(id)));
+      onChange?.(
+        selectedValues.filter((item) => String(item) !== String(id))
+      );
       return;
     }
 
@@ -92,30 +97,38 @@ export default function CollectionDropdown({
   };
 
   return (
-    <div className={`space-y-2.5 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       {label ? (
-        <label className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-600">
-            <Layers3 size={16} />
+        <label className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-sm font-medium text-zinc-900">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600">
+              <Layers3 size={15} />
+            </span>
+            <span>{label}</span>
           </span>
-          <span>
-            {label}
-            {required ? <span className="text-red-500"> *</span> : null}
-          </span>
+
+          {required ? (
+            <span className="text-xs font-medium text-red-500">Required</span>
+          ) : (
+            <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-500">
+              Optional
+            </span>
+          )}
         </label>
       ) : null}
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">
+      <div className="rounded-2xl bg-white p-3 ring-1 ring-zinc-200/70">
         {selectedItems.length > 0 ? (
           <div className="mb-3 flex flex-wrap gap-2">
             {selectedItems.map((item) => (
               <div
                 key={item._id}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-700"
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-700"
               >
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-zinc-500">
-                  <Check size={12} />
+                <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white text-zinc-500">
+                  <Check size={11} />
                 </span>
+
                 <span className="max-w-[180px] truncate">{item.name}</span>
 
                 {!disabled ? (
@@ -142,7 +155,7 @@ export default function CollectionDropdown({
             }
             required={required && !multiple}
             disabled={disabled || isLoading}
-            className="w-full appearance-none rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 pr-11 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full appearance-none rounded-xl bg-zinc-50 px-4 py-3 pr-11 text-sm text-zinc-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-zinc-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <option value="">
               {isLoading
@@ -181,15 +194,17 @@ export default function CollectionDropdown({
             {helperText ||
               (multiple
                 ? "You can select multiple collections."
-                : "Select one collection.")}
+                : required
+                ? "Select one collection."
+                : "You can leave this empty.")}
           </span>
 
-          <span className="rounded-full bg-zinc-100 px-2 py-1 font-medium text-zinc-600">
+          <span className="font-medium text-zinc-400">
             {multiple
               ? `${selectedItems.length} selected`
               : selectedItems.length
               ? "Selected"
-              : "None"}
+              : "Not selected"}
           </span>
         </div>
       </div>

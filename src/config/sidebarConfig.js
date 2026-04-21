@@ -1,12 +1,11 @@
 import {
   BadgePercent,
   BookOpen,
-  Boxes,
   FolderKanban,
   Heart,
   Home,
+  Image as ImageIcon,
   Package,
-  Settings,
   ShieldCheck,
   ShoppingBag,
   Tags,
@@ -55,11 +54,18 @@ export const SIDEBAR_ITEMS = [
     icon: ShoppingBag,
     children: [
       { label: "All Products", href: "/products" },
-      { label: "Add Product", href: "/products/create" },
+      { label: "Create Product", href: "/products/create" },
       { label: "Manage Products", href: "/products/manage" },
-      { label: "Draft Products", href: "/products?view=draft" },
-      { label: "Out of Stock", href: "/products?stock=out" },
       { label: "Low Stock", href: "/products/low-stock" },
+    ],
+  },
+
+  {
+    label: "Media",
+    icon: ImageIcon,
+    children: [
+      { label: "Media Library", href: "/media" },
+      { label: "Upload Media", href: "/media/upload" },
     ],
   },
 
@@ -75,11 +81,7 @@ export const SIDEBAR_ITEMS = [
   {
     label: "Customers",
     icon: Users,
-    children: [
-      { label: "All Customers", href: "/customers" },
-      { label: "New Customers", href: "/customers?type=new" },
-      { label: "Repeat Customers", href: "/customers?type=repeat" },
-    ],
+    children: [{ label: "All Customers", href: "/customers" }],
   },
 
   {
@@ -101,25 +103,13 @@ export const SIDEBAR_ITEMS = [
   },
 
   {
-    label: "Inventory",
-    icon: Boxes,
-    children: [
-      { label: "Overview", href: "/inventory" },
-      { label: "Reservations", href: "/inventory/reservations" },
-      { label: "In Stock", href: "/inventory?filter=in-stock" },
-      { label: "Low Stock", href: "/inventory?filter=low-stock" },
-      { label: "Out of Stock", href: "/inventory?filter=out-stock" },
-    ],
-  },
-
-  {
     label: "Coupons",
     icon: BadgePercent,
     children: [
       { label: "All Coupons", href: "/coupons" },
       { label: "Add Coupon", href: "/coupons/add" },
-      { label: "Active Coupons", href: "/coupons?status=active" },
-      { label: "Expired Coupons", href: "/coupons?status=expired" },
+      { label: "Active Coupons", href: "/coupons/active" },
+      { label: "Expired Coupons", href: "/coupons/expired" },
     ],
   },
 
@@ -128,12 +118,22 @@ export const SIDEBAR_ITEMS = [
     icon: Ticket,
     children: [
       { label: "All Tickets", href: "/support-tickets" },
-      { label: "Open Tickets", href: "/support-tickets?status=open" },
+      { label: "Open Tickets", href: "/support-tickets/open" },
     ],
   },
 
-  { label: "Wishlist", icon: Heart, href: "/wishlist" },
+  {
+    label: "Wishlist",
+    icon: Heart,
+    children: [
+      { label: "Wishlist Dashboard", href: "/wishlist" },
+      { label: "All Wishlist", href: "/wishlist/list" },
+    ],
+  },
 
-  { label: "Admin Users", icon: ShieldCheck, href: "/users" },
-  { label: "Settings", icon: Settings, href: "/settings" },
+  {
+    label: "Profile",
+    icon: ShieldCheck,
+    href: "/profile",
+  },
 ];

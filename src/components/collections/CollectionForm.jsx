@@ -10,6 +10,9 @@ import {
   Search,
   ShieldCheck,
   SlidersHorizontal,
+  Sparkles,
+  Hash,
+  FileText,
 } from "lucide-react";
 import CollectionProductCodes from "./CollectionProductCodes";
 
@@ -29,6 +32,80 @@ const slugify = (value = "") =>
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+const inputClass =
+  "w-full rounded-2xl bg-[#f7f7f8] px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:bg-white focus:shadow-[0_0_0_1px_rgba(24,24,27,0.14),0_8px_30px_rgba(0,0,0,0.05)]";
+
+const textareaClass =
+  "w-full rounded-2xl bg-[#f7f7f8] px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition resize-none focus:bg-white focus:shadow-[0_0_0_1px_rgba(24,24,27,0.14),0_8px_30px_rgba(0,0,0,0.05)]";
+
+function SectionCard({ icon: Icon, title, description, children }) {
+  return (
+    <section className="rounded-[30px] bg-white p-5 shadow-[0_10px_35px_rgba(0,0,0,0.05)] md:p-6">
+      <div className="mb-5 flex items-start gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
+          <Icon size={18} />
+        </div>
+
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold tracking-tight text-zinc-950">
+            {title}
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
+        </div>
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+function FieldLabel({ children, hint }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <label className="text-sm font-medium text-zinc-800">{children}</label>
+      {hint ? <span className="text-xs text-zinc-400">{hint}</span> : null}
+    </div>
+  );
+}
+
+function ToggleCard({ icon: Icon, title, text, checked, onChange }) {
+  return (
+    <label className="group flex cursor-pointer items-center gap-3 rounded-2xl bg-[#f7f7f8] px-4 py-3.5 transition hover:bg-[#f2f2f3]">
+      <div
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition ${
+          checked ? "bg-black text-white" : "bg-white text-zinc-600"
+        }`}
+      >
+        <Icon size={17} />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-zinc-900">{title}</div>
+        <div className="mt-0.5 text-xs leading-5 text-zinc-500">{text}</div>
+      </div>
+
+      <div
+        className={`relative h-7 w-12 rounded-full transition ${
+          checked ? "bg-black" : "bg-zinc-300"
+        }`}
+      >
+        <span
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
+            checked ? "left-6" : "left-1"
+          }`}
+        />
+      </div>
+
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="hidden"
+      />
+    </label>
+  );
+}
 
 export default function CollectionForm({
   initialData = null,
@@ -54,7 +131,10 @@ export default function CollectionForm({
     seoKeywords: keywordsToString(initialData?.seo?.keywords || []),
   });
 
-  const previewSlug = useMemo(() => form.slug || slugify(form.name), [form.slug, form.name]);
+  const previewSlug = useMemo(
+    () => form.slug || slugify(form.name),
+    [form.slug, form.name]
+  );
 
   const setField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -86,103 +166,126 @@ export default function CollectionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="grid gap-5 xl:grid-cols-[1.35fr_0.9fr]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_380px]">
         <div className="space-y-5">
-          <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="mb-5 flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-zinc-700">
-                <Layers3 size={18} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold text-zinc-900">Basic Details</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Collection identity, slug, and content.
-                </p>
-              </div>
-            </div>
-
+          <SectionCard
+            icon={Layers3}
+            title="Basic Details"
+            description="Set up the identity, slug, ordering, and main collection content."
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-zinc-800">Collection Name</label>
-                <input
-                  value={form.name}
-                  onChange={(e) => setField("name", e.target.value)}
-                  required
-                  placeholder="Creator Essentials"
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
-                />
+                <FieldLabel>Collection Name</FieldLabel>
+                <div className="relative">
+                  <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                    <Layers3 size={16} />
+                  </div>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setField("name", e.target.value)}
+                    required
+                    placeholder="Creator Essentials"
+                    className={`${inputClass} pl-11`}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-800">Slug</label>
-                <input
-                  value={form.slug}
-                  onChange={(e) => setField("slug", e.target.value)}
-                  placeholder="creator-essentials"
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
-                />
-                <p className="text-xs text-zinc-500">Preview: {previewSlug || "-"}</p>
+                <FieldLabel hint="Auto preview below">Slug</FieldLabel>
+                <div className="relative">
+                  <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">
+                    <Hash size={16} />
+                  </div>
+                  <input
+                    value={form.slug}
+                    onChange={(e) => setField("slug", e.target.value)}
+                    placeholder="creator-essentials"
+                    className={`${inputClass} pl-11`}
+                  />
+                </div>
+
+                <div className="rounded-2xl bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
+                  Preview:{" "}
+                  <span className="font-medium text-zinc-800">
+                    /collections/{previewSlug || "-"}
+                  </span>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-800">Sort Order</label>
+                <FieldLabel>Sort Order</FieldLabel>
                 <input
                   type="number"
                   value={form.sortOrder}
                   onChange={(e) => setField("sortOrder", e.target.value)}
                   placeholder="0"
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
+                  className={inputClass}
                 />
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-zinc-800">Description</label>
-                <textarea
-                  rows={5}
-                  value={form.description}
-                  onChange={(e) => setField("description", e.target.value)}
-                  placeholder="Write a short collection description..."
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
-                />
+                <FieldLabel>Description</FieldLabel>
+                <div className="relative">
+                  <div className="pointer-events-none absolute left-4 top-4 text-zinc-400">
+                    <FileText size={16} />
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={form.description}
+                    onChange={(e) => setField("description", e.target.value)}
+                    placeholder="Write a short collection description..."
+                    className={`${textareaClass} pl-11`}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="mb-5 flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-zinc-700">
-                <ImageIcon size={18} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold text-zinc-900">Media</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Add collection image and banner image URLs.
-                </p>
-              </div>
-            </div>
-
+          <SectionCard
+            icon={ImageIcon}
+            title="Media"
+            description="Attach collection image and banner image URLs for storefront presentation."
+          >
             <div className="grid gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-800">Image URL</label>
+                <FieldLabel>Image URL</FieldLabel>
                 <input
                   value={form.image}
                   onChange={(e) => setField("image", e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
+                  className={inputClass}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-800">Banner Image URL</label>
+                <FieldLabel>Banner Image URL</FieldLabel>
                 <input
                   value={form.bannerImage}
                   onChange={(e) => setField("bannerImage", e.target.value)}
                   placeholder="https://..."
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
+                  className={inputClass}
                 />
               </div>
+
+              {(form.image || form.bannerImage) && (
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl bg-zinc-50 px-4 py-3">
+                    <p className="text-xs font-medium text-zinc-500">Image</p>
+                    <p className="mt-1 truncate text-sm text-zinc-800">
+                      {form.image || "Not added"}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-zinc-50 px-4 py-3">
+                    <p className="text-xs font-medium text-zinc-500">Banner</p>
+                    <p className="mt-1 truncate text-sm text-zinc-800">
+                      {form.bannerImage || "Not added"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          </SectionCard>
 
           <CollectionProductCodes
             value={form.productCodes}
@@ -192,128 +295,127 @@ export default function CollectionForm({
         </div>
 
         <div className="space-y-5">
-          <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="mb-5 flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-zinc-700">
-                <SlidersHorizontal size={18} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold text-zinc-900">Visibility</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Control status, feature state, and homepage visibility.
-                </p>
-              </div>
-            </div>
-
+          <SectionCard
+            icon={SlidersHorizontal}
+            title="Visibility"
+            description="Control live status, featured flag, and homepage presence."
+          >
             <div className="space-y-3">
-              {[
-                {
-                  key: "isActive",
-                  title: "Active",
-                  text: "Show this collection in active listings.",
-                  icon: ShieldCheck,
-                },
-                {
-                  key: "isFeatured",
-                  title: "Featured",
-                  text: "Highlight collection in important sections.",
-                  icon: BadgeCheck,
-                },
-                {
-                  key: "showOnHomepage",
-                  title: "Homepage",
-                  text: "Allow this collection to appear on homepage.",
-                  icon: SparkleIcon,
-                },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
-                  <label
-                    key={item.key}
-                    className="flex cursor-pointer items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600">
-                      <Icon size={16} />
-                    </div>
+              <ToggleCard
+                icon={ShieldCheck}
+                title="Active"
+                text="Show this collection in active listings."
+                checked={Boolean(form.isActive)}
+                onChange={(value) => setField("isActive", value)}
+              />
 
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-zinc-900">{item.title}</div>
-                      <div className="text-xs text-zinc-500">{item.text}</div>
-                    </div>
+              <ToggleCard
+                icon={BadgeCheck}
+                title="Featured"
+                text="Highlight this collection in important sections."
+                checked={Boolean(form.isFeatured)}
+                onChange={(value) => setField("isFeatured", value)}
+              />
 
-                    <input
-                      type="checkbox"
-                      checked={Boolean(form[item.key])}
-                      onChange={(e) => setField(item.key, e.target.checked)}
-                      className="h-4 w-4 rounded border-zinc-300"
-                    />
-                  </label>
-                );
-              })}
+              <ToggleCard
+                icon={Sparkles}
+                title="Homepage"
+                text="Allow this collection to appear on the homepage."
+                checked={Boolean(form.showOnHomepage)}
+                onChange={(value) => setField("showOnHomepage", value)}
+              />
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="mb-5 flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-zinc-700">
-                <Search size={18} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold text-zinc-900">SEO</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Optimize title, description, and keywords.
-                </p>
-              </div>
-            </div>
-
+          <SectionCard
+            icon={Search}
+            title="SEO"
+            description="Optimize discoverability with title, description, and keywords."
+          >
             <div className="grid gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-800">SEO Title</label>
+                <FieldLabel>SEO Title</FieldLabel>
                 <input
                   value={form.seoTitle}
                   onChange={(e) => setField("seoTitle", e.target.value)}
                   placeholder="Creator Essentials | Brand"
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
+                  className={inputClass}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-800">SEO Description</label>
+                <FieldLabel>SEO Description</FieldLabel>
                 <textarea
                   rows={4}
                   value={form.seoDescription}
                   onChange={(e) => setField("seoDescription", e.target.value)}
                   placeholder="Short SEO description..."
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
+                  className={textareaClass}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-800">
-                  SEO Keywords
-                </label>
+                <FieldLabel hint="Comma separated">SEO Keywords</FieldLabel>
                 <input
                   value={form.seoKeywords}
                   onChange={(e) => setField("seoKeywords", e.target.value)}
                   placeholder="creator gear, studio setup, content creation"
-                  className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
+                  className={inputClass}
                 />
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          <div className="sticky top-24 rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-zinc-900">Ready to save?</h3>
-              <p className="mt-1 text-sm text-zinc-500">
-                Review the collection details and save changes.
+          <div className="sticky top-24 rounded-[30px] bg-white p-5 shadow-[0_12px_40px_rgba(0,0,0,0.07)] md:p-6">
+            <div className="mb-5">
+              <div className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600">
+                <Save size={12} />
+                Final Action
+              </div>
+
+              <h3 className="mt-3 text-base font-semibold text-zinc-950">
+                Ready to save?
+              </h3>
+
+              <p className="mt-1 text-sm leading-6 text-zinc-500">
+                Review the collection details and save changes once everything
+                looks right.
               </p>
+            </div>
+
+            <div className="mb-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+              <div className="rounded-2xl bg-zinc-50 px-3 py-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+                  Status
+                </p>
+                <p className="mt-1 text-sm font-semibold text-zinc-900">
+                  {form.isActive ? "Active" : "Inactive"}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-zinc-50 px-3 py-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+                  Featured
+                </p>
+                <p className="mt-1 text-sm font-semibold text-zinc-900">
+                  {form.isFeatured ? "Enabled" : "Disabled"}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-zinc-50 px-3 py-3">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
+                  Products
+                </p>
+                <p className="mt-1 text-sm font-semibold text-zinc-900">
+                  {Array.isArray(form.productCodes) ? form.productCodes.length : 0}
+                </p>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-black px-4 py-3.5 text-sm font-medium text-white transition hover:opacity-92 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -327,8 +429,4 @@ export default function CollectionForm({
       </div>
     </form>
   );
-}
-
-function SparkleIcon(props) {
-  return <span {...props} className="text-sm">✦</span>;
 }

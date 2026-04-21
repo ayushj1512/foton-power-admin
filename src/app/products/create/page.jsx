@@ -47,10 +47,28 @@ const initialForm = {
 };
 
 const inputClass =
-  "w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/30";
+  "w-full rounded-2xl bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 transition focus:bg-white focus:ring-zinc-300";
 
 const textareaClass =
-  "w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black/30";
+  "w-full rounded-2xl bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 transition focus:bg-white focus:ring-zinc-300";
+
+const labelClass = "mb-2 block text-sm font-medium text-zinc-800";
+
+function Field({ title, children, optional = false }) {
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label className={labelClass}>{title}</label>
+        {optional ? (
+          <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-500">
+            Optional
+          </span>
+        ) : null}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -126,21 +144,23 @@ export default function CreateProductPage() {
     <div className="p-4 sm:p-6">
       <form
         onSubmit={handleSubmit}
-        className="mx-auto max-w-3xl space-y-5 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-6"
+        className="mx-auto max-w-3xl space-y-6 rounded-3xl bg-white p-5 ring-1 ring-zinc-200 sm:p-6"
       >
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold">Create Product</h1>
-          <p className="text-sm text-black/60">
-            Upload media first, then fill product details.
+          <h1 className="text-2xl font-bold text-zinc-900">Create Product</h1>
+          <p className="text-sm text-zinc-500">
+            Add media and product details below.
           </p>
         </div>
 
-        <div className="space-y-4 rounded-3xl border border-black/10 p-4">
+        <div className="space-y-4 rounded-3xl bg-zinc-50/70 p-4 ring-1 ring-zinc-200">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-sm font-semibold">Product Media</h2>
-              <p className="text-xs text-black/60">
-                Select images or videos from media library.
+              <h2 className="text-sm font-semibold text-zinc-900">
+                Product Media
+              </h2>
+              <p className="text-xs text-zinc-500">
+                Upload or select product images/videos.
               </p>
             </div>
 
@@ -150,7 +170,7 @@ export default function CreateProductPage() {
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
             >
               <ImagePlus size={16} />
-              {selectedMedia.length ? "Change Media" : "Upload / Select Media"}
+              {selectedMedia.length ? "Update Media" : "Upload Media"}
             </button>
           </div>
 
@@ -162,7 +182,7 @@ export default function CreateProductPage() {
                 return (
                   <div
                     key={`${item?.publicId || item?._id || "media"}-${index}`}
-                    className="relative overflow-hidden rounded-2xl border border-black/10 bg-black/5"
+                    className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200"
                   >
                     {item?.resourceType === "video" ? (
                       <video
@@ -182,7 +202,7 @@ export default function CreateProductPage() {
                     <button
                       type="button"
                       onClick={() => removeMedia(index)}
-                      className="absolute right-2 top-2 rounded-full bg-white/90 p-2 text-black shadow-sm"
+                      className="absolute right-2 top-2 rounded-full bg-white p-2 text-zinc-700 shadow-sm ring-1 ring-zinc-200"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -194,52 +214,63 @@ export default function CreateProductPage() {
             <button
               type="button"
               onClick={() => setMediaOpen(true)}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 px-4 py-10 text-center transition hover:bg-black/[0.02]"
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl bg-white px-4 py-10 text-center ring-1 ring-dashed ring-zinc-300 transition hover:bg-zinc-50"
             >
-              <ImagePlus size={20} />
-              <span className="text-sm font-medium">No media selected</span>
-              <span className="text-xs text-black/50">
-                Click here to upload or pick media
+              <ImagePlus size={20} className="text-zinc-700" />
+              <span className="text-sm font-medium text-zinc-900">
+                Upload or select media
+              </span>
+              <span className="text-xs text-zinc-500">
+                Click here to open media library
               </span>
             </button>
           )}
         </div>
 
-        <div className="space-y-3">
-          <input
-            value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-            placeholder="Product name"
-            className={inputClass}
-            required
-          />
+        <div className="space-y-4">
+          <Field title="Product Name">
+            <input
+              value={form.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              className={inputClass}
+              required
+            />
+          </Field>
 
-          <CategorySubcategoryDropdown
-            categoryId={form.category}
-            subcategoryId={form.subcategory}
-            onCategoryChange={(value) => handleChange("category", value)}
-            onSubcategoryChange={(value) => handleChange("subcategory", value)}
-            required
-          />
+          <div>
+            <div className="mb-2">
+              <label className={labelClass}>Category &amp; Subcategory</label>
+            </div>
+
+            <CategorySubcategoryDropdown
+              categoryId={form.category}
+              subcategoryId={form.subcategory}
+              onCategoryChange={(value) => handleChange("category", value)}
+              onSubcategoryChange={(value) => handleChange("subcategory", value)}
+              required
+            />
+          </div>
 
           <CollectionDropdown
             value={form.collection}
             onChange={(value) => handleChange("collection", value)}
             label="Collection"
             placeholder="Select collection"
-            helperText="Optional. Link this product to a collection."
+            helperText="You can leave this empty."
           />
 
-          <div className="space-y-3 rounded-2xl border border-black/10 p-4">
+          <div className="space-y-3 rounded-2xl bg-zinc-50/70 p-4 ring-1 ring-zinc-200">
             <div className="flex items-center gap-2">
-              <Palette size={16} className="text-black/50" />
-              <p className="text-sm font-medium">Color</p>
+              <Palette size={16} className="text-zinc-500" />
+              <p className="text-sm font-medium text-zinc-900">Color</p>
+              <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-500">
+                Optional
+              </span>
             </div>
 
             <input
               value={form.color}
               onChange={(e) => handleChange("color", e.target.value)}
-              placeholder="Color"
               className={inputClass}
             />
 
@@ -254,10 +285,10 @@ export default function CreateProductPage() {
                     key={color}
                     type="button"
                     onClick={() => handleChange("color", color)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                       isActive
-                        ? "border-black bg-black text-white"
-                        : "border-black/10 bg-white text-black hover:bg-black/5"
+                        ? "bg-black text-white"
+                        : "bg-white text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-50"
                     }`}
                   >
                     {color}
@@ -267,83 +298,103 @@ export default function CreateProductPage() {
             </div>
           </div>
 
-          <input
-            value={form.tags}
-            onChange={(e) => handleChange("tags", e.target.value)}
-            placeholder="Tags comma separated"
-            className={inputClass}
-          />
+          <Field title="Tags" optional>
+            <input
+              value={form.tags}
+              onChange={(e) => handleChange("tags", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
 
-          <input
-            type="number"
-            value={form.mrp}
-            onChange={(e) => handleChange("mrp", e.target.value)}
-            placeholder="MRP"
-            className={inputClass}
-            required
-          />
+          <Field title="MRP">
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
+                Rs
+              </span>
+              <input
+                type="number"
+                value={form.mrp}
+                onChange={(e) => handleChange("mrp", e.target.value)}
+                className="w-full rounded-2xl bg-zinc-50 py-3 pl-11 pr-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 transition focus:bg-white focus:ring-zinc-300"
+                required
+              />
+            </div>
+          </Field>
 
-          <input
-            type="number"
-            value={form.discountPrice}
-            onChange={(e) => handleChange("discountPrice", e.target.value)}
-            placeholder="Discount Price"
-            className={inputClass}
-            required
-          />
+          <Field title="Discount Price">
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
+                Rs
+              </span>
+              <input
+                type="number"
+                value={form.discountPrice}
+                onChange={(e) => handleChange("discountPrice", e.target.value)}
+                className="w-full rounded-2xl bg-zinc-50 py-3 pl-11 pr-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 transition focus:bg-white focus:ring-zinc-300"
+                required
+              />
+            </div>
+          </Field>
 
-          <input
-            type="number"
-            value={form.stock}
-            onChange={(e) => handleChange("stock", e.target.value)}
-            placeholder="Stock"
-            className={inputClass}
-          />
+          <Field title="Stock" optional>
+            <input
+              type="number"
+              value={form.stock}
+              onChange={(e) => handleChange("stock", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
 
-          <select
-            value={form.status}
-            onChange={(e) => handleChange("status", e.target.value)}
-            className={inputClass}
-          >
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="archived">Archived</option>
-          </select>
+          <Field title="Status">
+            <select
+              value={form.status}
+              onChange={(e) => handleChange("status", e.target.value)}
+              className={inputClass}
+            >
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="archived">Archived</option>
+            </select>
+          </Field>
 
-          <input
-            value={form.hsnCode}
-            onChange={(e) => handleChange("hsnCode", e.target.value)}
-            placeholder="HSN Code"
-            className={inputClass}
-          />
+          <Field title="HSN Code" optional>
+            <input
+              value={form.hsnCode}
+              onChange={(e) => handleChange("hsnCode", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
 
-          <input
-            value={form.taxClass}
-            onChange={(e) => handleChange("taxClass", e.target.value)}
-            placeholder="Tax Rate"
-            className={inputClass}
-          />
+          <Field title="Tax Rate" optional>
+            <input
+              value={form.taxClass}
+              onChange={(e) => handleChange("taxClass", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
 
-          <textarea
-            value={form.shortDescription}
-            onChange={(e) => handleChange("shortDescription", e.target.value)}
-            placeholder="Short description"
-            rows={3}
-            className={textareaClass}
-          />
+          <Field title="Short Description" optional>
+            <textarea
+              value={form.shortDescription}
+              onChange={(e) => handleChange("shortDescription", e.target.value)}
+              rows={3}
+              className={textareaClass}
+            />
+          </Field>
 
-          <textarea
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            placeholder="Description"
-            rows={6}
-            className={textareaClass}
-          />
+          <Field title="Description" optional>
+            <textarea
+              value={form.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              rows={6}
+              className={textareaClass}
+            />
+          </Field>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border border-black/10 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-          <label className="flex items-center gap-2 text-sm">
+        <div className="flex flex-col gap-3 rounded-2xl bg-zinc-50/70 p-4 ring-1 ring-zinc-200 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+          <label className="flex items-center gap-2 text-sm text-zinc-800">
             <input
               type="checkbox"
               checked={form.isFeatured}
@@ -352,7 +403,7 @@ export default function CreateProductPage() {
             Featured
           </label>
 
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm text-zinc-800">
             <input
               type="checkbox"
               checked={form.isBestSeller}
@@ -363,7 +414,7 @@ export default function CreateProductPage() {
         </div>
 
         {(error || message) && (
-          <div className="rounded-2xl border border-black/10 bg-black/5 px-4 py-3 text-sm">
+          <div className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm text-zinc-700 ring-1 ring-zinc-200">
             {error || message}
           </div>
         )}

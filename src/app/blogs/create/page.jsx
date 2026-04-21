@@ -102,98 +102,106 @@ export default function CreateBlogPage() {
     }
   };
 
+  const hashtags = parseCommaText(form.hashtagsText);
+  const linkedProducts = parseCommaText(form.productCodesText);
+
   return (
     <>
-      <div className="min-h-screen bg-[#f4f5f7] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-        <div className="flex w-full flex-col gap-6">
-          <div className="overflow-hidden rounded-[28px] border border-neutral-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <div className="border-b border-neutral-200 bg-gradient-to-br from-white via-slate-50/70 to-blue-50/60 p-5 sm:p-7">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => router.push("/blogs")}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm font-medium text-black transition hover:bg-neutral-50"
-                  >
-                    <ArrowLeft size={16} />
-                    Back to Blogs
-                  </button>
+      <div className="min-h-screen bg-[#f6f6f7] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1600px]">
+          <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => router.push("/blogs")}
+                className="inline-flex h-10 items-center gap-2 rounded-2xl border border-black/10 bg-white px-4 text-sm font-medium text-black transition hover:bg-black/[0.02]"
+              >
+                <ArrowLeft size={16} />
+                Back to Blogs
+              </button>
 
-                  <div>
-                    <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-black px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
-                      <Sparkles size={14} />
-                      Admin Blog Editor
-                    </div>
-
-                    <h1 className="text-2xl font-semibold tracking-tight text-black sm:text-3xl">
-                      Create Blog
-                    </h1>
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-black/60">
-                      Create a rich blog post with content, linked products,
-                      hashtags, and media from your admin library.
-                    </p>
-                  </div>
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-full bg-black px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
+                  <Sparkles size={13} />
+                  Admin Blog Editor
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-neutral-200 bg-white/80 px-4 py-3 shadow-sm">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-black/45">
-                      Status
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-black">
-                      {form.isPublished ? "Published" : "Draft"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-neutral-200 bg-white/80 px-4 py-3 shadow-sm">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-black/45">
-                      Images
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-black">
-                      {form.images.length}
-                    </p>
-                  </div>
-
-                  <div className="col-span-2 rounded-2xl border border-neutral-200 bg-white/80 px-4 py-3 shadow-sm sm:col-span-1">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-black/45">
-                      Slug
-                    </p>
-                    <p className="mt-1 truncate text-sm font-semibold text-black">
-                      {computedSlug || "auto-generated"}
-                    </p>
-                  </div>
+                <div>
+                  <h1 className="text-2xl font-semibold tracking-tight text-black sm:text-3xl">
+                    Create Blog
+                  </h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55">
+                    Clean, premium blog creation flow with media, hashtags,
+                    linked products, and instant publish controls.
+                  </p>
                 </div>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 sm:p-6 lg:p-7">
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-                <div className="space-y-6">
-                  {(error || message) && (
-                    <div
-                      className={`rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm ${
-                        error
-                          ? "border-rose-200 bg-rose-50 text-rose-700"
-                          : "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      }`}
-                    >
-                      {error || message}
-                    </div>
-                  )}
+            <div className="grid grid-cols-3 gap-3 sm:min-w-[360px]">
+              <div className="rounded-2xl bg-white px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-black/40">
+                  Status
+                </p>
+                <p className="mt-1 text-sm font-semibold text-black">
+                  {form.isPublished ? "Published" : "Draft"}
+                </p>
+              </div>
 
-                  <div className="rounded-[24px] border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
-                    <div className="mb-4">
-                      <h2 className="text-base font-semibold text-black">
-                        Basic Details
-                      </h2>
-                      <p className="mt-1 text-sm text-black/55">
-                        Add the main blog information here.
-                      </p>
-                    </div>
+              <div className="rounded-2xl bg-white px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-black/40">
+                  Images
+                </p>
+                <p className="mt-1 text-sm font-semibold text-black">
+                  {form.images.length}
+                </p>
+              </div>
 
+              <div className="rounded-2xl bg-white px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-black/40">
+                  Products
+                </p>
+                <p className="mt-1 text-sm font-semibold text-black">
+                  {linkedProducts.length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.45fr)_380px]">
+              <div className="space-y-6">
+                {(error || message) && (
+                  <div
+                    className={`rounded-2xl px-4 py-3 text-sm font-medium shadow-[0_8px_24px_rgba(0,0,0,0.04)] ring-1 ${
+                      error
+                        ? "bg-rose-50 text-rose-700 ring-rose-200"
+                        : "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                    }`}
+                  >
+                    {error || message}
+                  </div>
+                )}
+
+                <section className="overflow-hidden rounded-[24px] bg-white shadow-[0_12px_36px_rgba(0,0,0,0.05)] ring-1 ring-black/5">
+                  <div className="border-b border-black/6 px-5 py-4 sm:px-6">
+                    <div className="flex items-center gap-3">
+                      <span className="h-5 w-1.5 rounded-full bg-black" />
+                      <div>
+                        <h2 className="text-base font-semibold text-black">
+                          Basic Details
+                        </h2>
+                        <p className="mt-1 text-sm text-black/50">
+                          Add the core blog information.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-5 px-5 py-5 sm:px-6 sm:py-6">
                     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-black">
+                        <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.16em] text-black/45">
                           Title
                         </label>
                         <input
@@ -203,13 +211,13 @@ export default function CreateBlogPage() {
                             handleChange("title", e.target.value)
                           }
                           placeholder="Enter blog title"
-                          className="h-12 w-full rounded-2xl border border-neutral-300 bg-neutral-50 px-4 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100"
+                          className="h-12 w-full rounded-2xl border border-black/8 bg-[#fafafa] px-4 text-sm text-black outline-none transition placeholder:text-black/30 focus:border-black/15 focus:bg-white focus:ring-4 focus:ring-black/5"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-black">
+                        <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.16em] text-black/45">
                           Slug
                         </label>
                         <input
@@ -219,56 +227,63 @@ export default function CreateBlogPage() {
                             handleChange("slug", e.target.value)
                           }
                           placeholder="Auto-generated from title"
-                          className="h-12 w-full rounded-2xl border border-neutral-300 bg-neutral-50 px-4 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100"
+                          className="h-12 w-full rounded-2xl border border-black/8 bg-[#fafafa] px-4 text-sm text-black outline-none transition placeholder:text-black/30 focus:border-black/15 focus:bg-white focus:ring-4 focus:ring-black/5"
                         />
                         <p className="mt-2 text-xs text-black/45">
                           Final slug:{" "}
-                          <span className="font-semibold text-black/70">
-                            {computedSlug || "—"}
+                          <span className="font-medium text-black/75">
+                            {computedSlug || "auto-generated"}
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-5">
-                      <label className="mb-2 block text-sm font-medium text-black">
+                    <div>
+                      <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.16em] text-black/45">
                         Content
                       </label>
                       <textarea
-                        rows={14}
+                        rows={16}
                         value={form.content}
                         onChange={(e) =>
                           handleChange("content", e.target.value)
                         }
                         placeholder="Write blog content..."
-                        className="w-full rounded-2xl border border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100"
+                        className="w-full rounded-2xl border border-black/8 bg-[#fafafa] px-4 py-3 text-sm leading-6 text-black outline-none transition placeholder:text-black/30 focus:border-black/15 focus:bg-white focus:ring-4 focus:ring-black/5"
                         required
                       />
                     </div>
                   </div>
+                </section>
 
-                  <div className="rounded-[24px] border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
-                    <div className="mb-4">
-                      <h2 className="text-base font-semibold text-black">
-                        Media
-                      </h2>
-                      <p className="mt-1 text-sm text-black/55">
-                        Select blog images directly from your media library.
-                      </p>
+                <section className="overflow-hidden rounded-[24px] bg-white shadow-[0_12px_36px_rgba(0,0,0,0.05)] ring-1 ring-black/5">
+                  <div className="border-b border-black/6 px-5 py-4 sm:px-6">
+                    <div className="flex items-center gap-3">
+                      <span className="h-5 w-1.5 rounded-full bg-neutral-400" />
+                      <div>
+                        <h2 className="text-base font-semibold text-black">
+                          Media
+                        </h2>
+                        <p className="mt-1 text-sm text-black/50">
+                          Select one or more images from your media library.
+                        </p>
+                      </div>
                     </div>
+                  </div>
 
+                  <div className="px-5 py-5 sm:px-6 sm:py-6">
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="button"
                         onClick={() => setOpenMedia(true)}
-                        className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-black px-4 text-sm font-medium text-white transition hover:bg-neutral-800"
+                        className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-black px-4 text-sm font-medium text-white transition hover:bg-black/85"
                       >
                         <ImagePlus size={16} />
                         {form.images.length ? "Manage Images" : "Select Images"}
                       </button>
 
                       {form.images.length > 0 && (
-                        <span className="rounded-full border border-neutral-300 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+                        <span className="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-black/70">
                           {form.images.length} image
                           {form.images.length > 1 ? "s" : ""} selected
                         </span>
@@ -280,152 +295,205 @@ export default function CreateBlogPage() {
                         {form.images.map((image, index) => (
                           <div
                             key={`${image.url}-${index}`}
-                            className="group relative overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-sm"
+                            className="group relative overflow-hidden rounded-[20px] bg-[#f3f3f3] ring-1 ring-black/6"
                           >
                             <img
                               src={image.url}
                               alt={`Blog image ${index + 1}`}
-                              className="aspect-[4/4.5] h-full w-full object-cover"
+                              className="aspect-square h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             />
+
                             <button
                               type="button"
                               onClick={() => handleRemoveImage(index)}
-                              className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white/95 text-black shadow-sm transition hover:scale-105"
+                              className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-black shadow-[0_4px_12px_rgba(0,0,0,0.12)] ring-1 ring-black/8 transition hover:scale-105"
                             >
-                              <X size={15} />
+                              <X size={14} />
                             </button>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="mt-5 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-10 text-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-200 bg-white shadow-sm">
-                          <ImagePlus size={20} className="text-slate-700" />
+                      <div className="mt-5 rounded-[20px] bg-[#fafafa] px-4 py-12 text-center ring-1 ring-black/6">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white ring-1 ring-black/8">
+                          <ImagePlus size={20} className="text-black/70" />
                         </div>
                         <p className="mt-3 text-sm font-medium text-black">
                           No images selected
                         </p>
-                        <p className="mt-1 text-xs text-black/50">
-                          Open media picker and choose one or more blog images.
+                        <p className="mt-1 text-xs text-black/45">
+                          Open media picker and choose blog images.
                         </p>
                       </div>
                     )}
                   </div>
-                </div>
+                </section>
+              </div>
 
-                <div className="space-y-6">
-                  <div className="rounded-[24px] border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
-                    <div className="mb-4">
-                      <h2 className="text-base font-semibold text-black">
-                        Meta Details
-                      </h2>
-                      <p className="mt-1 text-sm text-black/55">
-                        Optional metadata for better organization.
-                      </p>
-                    </div>
-
-                    <div className="space-y-5">
+              <div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
+                <section className="overflow-hidden rounded-[24px] bg-white shadow-[0_12px_36px_rgba(0,0,0,0.05)] ring-1 ring-black/5">
+                  <div className="border-b border-black/6 px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="h-5 w-1.5 rounded-full bg-neutral-500" />
                       <div>
-                        <label className="mb-2 flex items-center gap-2 text-sm font-medium text-black">
-                          <Hash size={16} />
-                          Hashtags
-                        </label>
-                        <input
-                          type="text"
-                          value={form.hashtagsText}
-                          onChange={(e) =>
-                            handleChange("hashtagsText", e.target.value)
-                          }
-                          placeholder="summer, outfit ideas, co-ord set"
-                          className="h-12 w-full rounded-2xl border border-neutral-300 bg-neutral-50 px-4 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100"
-                        />
-                        <p className="mt-2 text-xs text-black/45">
-                          Add comma separated hashtags.
+                        <h2 className="text-base font-semibold text-black">
+                          Meta Details
+                        </h2>
+                        <p className="mt-1 text-sm text-black/50">
+                          Optional metadata and publish settings.
                         </p>
                       </div>
-
-                      <div>
-                        <label className="mb-2 flex items-center gap-2 text-sm font-medium text-black">
-                          <Package size={16} />
-                          Product Codes
-                        </label>
-                        <input
-                          type="text"
-                          value={form.productCodesText}
-                          onChange={(e) =>
-                            handleChange("productCodesText", e.target.value)
-                          }
-                          placeholder="000123, 000124"
-                          className="h-12 w-full rounded-2xl border border-neutral-300 bg-neutral-50 px-4 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100"
-                        />
-                        <p className="mt-2 text-xs text-black/45">
-                          Optional. Add comma separated product codes.
-                        </p>
-                      </div>
-
-                      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-neutral-300 bg-gradient-to-br from-neutral-50 to-slate-50 px-4 py-4 transition hover:from-white hover:to-slate-50">
-                        <input
-                          type="checkbox"
-                          checked={form.isPublished}
-                          onChange={(e) =>
-                            handleChange("isPublished", e.target.checked)
-                          }
-                          className="mt-0.5 h-4 w-4 rounded border-neutral-400"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-black">
-                            Publish this blog now
-                          </p>
-                          <p className="mt-1 text-xs text-black/50">
-                            Keep this enabled to publish immediately after save.
-                          </p>
-                        </div>
-                      </label>
                     </div>
                   </div>
 
-                  <div className="rounded-[24px] border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
-                    <div className="mb-4">
-                      <h2 className="text-base font-semibold text-black">
-                        Quick Preview
-                      </h2>
+                  <div className="space-y-5 px-5 py-5">
+                    <div>
+                      <label className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-black/45">
+                        <Hash size={14} />
+                        Hashtags
+                      </label>
+                      <input
+                        type="text"
+                        value={form.hashtagsText}
+                        onChange={(e) =>
+                          handleChange("hashtagsText", e.target.value)
+                        }
+                        placeholder="summer, outfit ideas, co-ord set"
+                        className="h-12 w-full rounded-2xl border border-black/8 bg-[#fafafa] px-4 text-sm text-black outline-none transition placeholder:text-black/30 focus:border-black/15 focus:bg-white focus:ring-4 focus:ring-black/5"
+                      />
+                      <p className="mt-2 text-xs text-black/45">
+                        Add comma separated hashtags.
+                      </p>
                     </div>
 
-                    <div className="space-y-3 rounded-2xl border border-neutral-200 bg-gradient-to-br from-neutral-50 to-slate-50 p-4">
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-black/40">
-                          Title
-                        </p>
-                        <p className="mt-1 line-clamp-2 text-sm font-semibold text-black">
-                          {form.title || "Your blog title will appear here"}
-                        </p>
-                      </div>
+                    <div>
+                      <label className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-black/45">
+                        <Package size={14} />
+                        Product Codes
+                      </label>
+                      <input
+                        type="text"
+                        value={form.productCodesText}
+                        onChange={(e) =>
+                          handleChange("productCodesText", e.target.value)
+                        }
+                        placeholder="000123, 000124"
+                        className="h-12 w-full rounded-2xl border border-black/8 bg-[#fafafa] px-4 text-sm text-black outline-none transition placeholder:text-black/30 focus:border-black/15 focus:bg-white focus:ring-4 focus:ring-black/5"
+                      />
+                      <p className="mt-2 text-xs text-black/45">
+                        Optional. Add comma separated product codes.
+                      </p>
+                    </div>
 
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleChange("isPublished", !form.isPublished)
+                      }
+                      className={`flex w-full items-center justify-between rounded-2xl px-4 py-4 text-left transition ring-1 ${
+                        form.isPublished
+                          ? "bg-black text-white ring-black"
+                          : "bg-[#fafafa] text-black ring-black/6"
+                      }`}
+                    >
                       <div>
-                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-black/40">
-                          Slug
-                        </p>
-                        <p className="mt-1 break-all text-sm text-black/70">
-                          /blogs/{computedSlug || "your-blog-slug"}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-black/40">
-                          Linked Products
-                        </p>
-                        <p className="mt-1 text-sm text-black/70">
-                          {parseCommaText(form.productCodesText).length || 0}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-black/40">
-                          Visibility
-                        </p>
-                        <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
-                          <CheckCircle2 size={14} />
+                        <p className="text-sm font-medium">
                           {form.isPublished ? "Published" : "Draft"}
+                        </p>
+                        <p
+                          className={`mt-1 text-xs ${
+                            form.isPublished ? "text-white/65" : "text-black/45"
+                          }`}
+                        >
+                          Toggle whether this blog goes live immediately.
+                        </p>
+                      </div>
+
+                      <div
+                        className={`relative h-6 w-11 rounded-full transition ${
+                          form.isPublished ? "bg-white/20" : "bg-black/10"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${
+                            form.isPublished ? "left-6" : "left-1 bg-black"
+                          }`}
+                        />
+                      </div>
+                    </button>
+                  </div>
+                </section>
+
+                <section className="overflow-hidden rounded-[24px] bg-white shadow-[0_12px_36px_rgba(0,0,0,0.05)] ring-1 ring-black/5">
+                  <div className="border-b border-black/6 px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="h-5 w-1.5 rounded-full bg-slate-500" />
+                      <div>
+                        <h2 className="text-base font-semibold text-black">
+                          Quick Preview
+                        </h2>
+                        <p className="mt-1 text-sm text-black/50">
+                          Live summary before saving.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-5 py-5">
+                    <div className="rounded-[20px] bg-[#fafafa] p-4 ring-1 ring-black/6">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-black/40">
+                        Blog Title
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-base font-semibold leading-6 text-black">
+                        {form.title || "Your blog title will appear here"}
+                      </p>
+
+                      <div className="mt-4 h-px bg-black/6" />
+
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-black/40">
+                            Slug
+                          </p>
+                          <p className="mt-1 break-all text-sm text-black/70">
+                            /blogs/{computedSlug || "your-blog-slug"}
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="rounded-2xl bg-white p-3 ring-1 ring-black/6">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-black/40">
+                              Hashtags
+                            </p>
+                            <p className="mt-1 text-sm font-medium text-black">
+                              {hashtags.length}
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl bg-white p-3 ring-1 ring-black/6">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-black/40">
+                              Products
+                            </p>
+                            <p className="mt-1 text-sm font-medium text-black">
+                              {linkedProducts.length}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-black/40">
+                            Visibility
+                          </p>
+                          <div
+                            className={`mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                              form.isPublished
+                                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                                : "bg-neutral-100 text-neutral-700 ring-1 ring-black/6"
+                            }`}
+                          >
+                            <CheckCircle2 size={14} />
+                            {form.isPublished ? "Published" : "Draft"}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -434,7 +502,7 @@ export default function CreateBlogPage() {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-black px-5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-black px-5 text-sm font-medium text-white transition hover:bg-black/85 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <Save size={16} />
                         {isSubmitting ? "Saving..." : "Create Blog"}
@@ -443,16 +511,16 @@ export default function CreateBlogPage() {
                       <button
                         type="button"
                         onClick={() => router.push("/blogs")}
-                        className="inline-flex h-12 items-center justify-center rounded-2xl border border-neutral-300 bg-neutral-100 px-5 text-sm font-medium text-black transition hover:bg-neutral-200"
+                        className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#f3f3f3] px-5 text-sm font-medium text-black transition hover:bg-[#ebebeb]"
                       >
                         Cancel
                       </button>
                     </div>
                   </div>
-                </div>
+                </section>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       </div>
 

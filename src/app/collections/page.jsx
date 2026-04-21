@@ -66,92 +66,98 @@ export default function CollectionsPage() {
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="rounded-[32px] border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-600">
-              <Layers3 size={12} />
-              Collection Management
-            </div>
-            <h1 className="mt-3 text-2xl font-semibold text-zinc-950">Collections</h1>
-            <p className="mt-1 text-sm text-zinc-500">
-              Create, edit, and manage homepage-ready product collections.
-            </p>
+    <div className="space-y-10 bg-[#fafafa] px-4 py-6 md:px-8">
+
+      {/* HEADER */}
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <Layers3 size={14} />
+            Collection Management
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/collections/analytics"
-              className="inline-flex h-11 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
-            >
-              <BarChart3 size={16} />
-              Analytics
-            </Link>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900">
+            Collections
+          </h1>
 
-            <button
-              type="button"
-              onClick={() => fetchCollections()}
-              className="inline-flex h-11 items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
-            >
-              <RefreshCw size={16} />
-              Refresh
-            </button>
+          <p className="mt-1 text-sm text-zinc-500">
+            Manage and organize your collections cleanly.
+          </p>
+        </div>
 
-            <Link
-              href="/collections/new"
-              className="inline-flex h-11 items-center gap-2 rounded-2xl bg-zinc-900 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
-            >
-              <Plus size={16} />
-              New Collection
-            </Link>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/collections/analytics"
+            className="h-10 px-4 text-sm text-zinc-700 hover:text-black transition"
+          >
+            Analytics
+          </Link>
+
+          <button
+            onClick={fetchCollections}
+            className="h-10 px-4 text-sm text-zinc-700 hover:text-black transition"
+          >
+            Refresh
+          </button>
+
+          <Link
+            href="/collections/new"
+            className="h-10 px-4 text-sm font-medium text-white bg-black rounded-xl"
+          >
+            New
+          </Link>
         </div>
       </div>
 
+      {/* STATS */}
       <CollectionStats collections={collections || []} />
 
-      <div className="rounded-[28px] border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 md:grid-cols-[1fr_220px]">
-          <div className="relative">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
-            />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search collections..."
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-11 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
-            />
-          </div>
+      {/* SEARCH + FILTER */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white"
-          >
-            <option value="all">All Collections</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="featured">Featured</option>
-            <option value="homepage">Homepage</option>
-          </select>
+        <div className="relative w-full md:max-w-md">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search collections..."
+            className="w-full bg-white px-10 py-2.5 text-sm outline-none placeholder:text-zinc-400"
+          />
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+          {["all", "active", "inactive", "featured", "homepage"].map((f) => {
+            const active = filter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 text-xs transition ${
+                  active
+                    ? "text-black font-medium"
+                    : "text-zinc-500 hover:text-black"
+                }`}
+              >
+                {f}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      ) : null}
+      {/* ALERTS */}
+      {error && (
+        <div className="text-sm text-red-500">{error}</div>
+      )}
 
-      {success ? (
-        <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-          {success}
-        </div>
-      ) : null}
+      {success && (
+        <div className="text-sm text-green-600">{success}</div>
+      )}
 
+      {/* TABLE */}
       <CollectionTable
         collections={filtered}
         loading={isLoading}

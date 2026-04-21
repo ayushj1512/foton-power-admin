@@ -3,7 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronRight, Layers3, Menu, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Layers3,
+  Menu,
+  X,
+} from "lucide-react";
 import { SIDEBAR_ITEMS } from "@/config/sidebarConfig";
 
 function cleanPath(href = "") {
@@ -16,13 +24,21 @@ function isChildActive(pathname, href = "") {
 
 function isItemActive(pathname, item) {
   if (item.href) return isChildActive(pathname, item.href);
+
   if (item.children?.length) {
     return item.children.some((child) => isChildActive(pathname, child.href));
   }
+
   return false;
 }
 
-function SidebarNav({ pathname, openMenus, toggleMenu, onNavigate }) {
+function SidebarNav({
+  pathname,
+  openMenus,
+  toggleMenu,
+  onNavigate,
+  collapsed = false,
+}) {
   return (
     <nav className="space-y-1.5">
       {SIDEBAR_ITEMS.map((item) => {
@@ -36,55 +52,76 @@ function SidebarNav({ pathname, openMenus, toggleMenu, onNavigate }) {
               <button
                 type="button"
                 onClick={() => toggleMenu(item.label)}
-                className={`flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-3 text-left transition ${
-                  active ? "bg-black text-white" : "text-black hover:bg-black/[0.05]"
+                title={collapsed ? item.label : ""}
+                className={`flex w-full items-center ${
+                  collapsed ? "justify-center" : "justify-between"
+                } gap-3 rounded-2xl px-3 py-3 text-left transition ${
+                  active
+                    ? "bg-black text-white"
+                    : "text-black hover:bg-black/[0.05]"
                 }`}
               >
-                <div className="flex min-w-0 items-center gap-3">
+                <div
+                  className={`flex min-w-0 items-center ${
+                    collapsed ? "justify-center" : "gap-3"
+                  }`}
+                >
                   <div
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                      active ? "bg-white/10 text-white" : "bg-black/[0.06] text-black"
+                      active
+                        ? "bg-white/10 text-white"
+                        : "bg-black/[0.06] text-black"
                     }`}
                   >
                     <Icon size={17} />
                   </div>
 
-                  <p className="truncate text-sm font-medium">{item.label}</p>
+                  {!collapsed ? (
+                    <p className="truncate text-sm font-medium">{item.label}</p>
+                  ) : null}
                 </div>
 
-                <div className={active ? "text-white/70" : "text-black/45"}>
-                  {isOpen ? <ChevronDown size={17} /> : <ChevronRight size={17} />}
-                </div>
+                {!collapsed ? (
+                  <div className={active ? "text-white/70" : "text-black/45"}>
+                    {isOpen ? (
+                      <ChevronDown size={17} />
+                    ) : (
+                      <ChevronRight size={17} />
+                    )}
+                  </div>
+                ) : null}
               </button>
 
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <div className="ml-5 mt-1 border-l border-black/10 pl-3">
-                  <div className="space-y-1 pb-1">
-                    {item.children.map((child) => {
-                      const childActive = isChildActive(pathname, child.href);
+              {!collapsed ? (
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="ml-5 mt-1 border-l border-black/10 pl-3">
+                    <div className="space-y-1 pb-1">
+                      {item.children.map((child) => {
+                        const childActive = isChildActive(pathname, child.href);
 
-                      return (
-                        <Link
-                          key={child.label}
-                          href={child.href}
-                          onClick={onNavigate}
-                          className={`block rounded-xl px-3 py-2.5 text-sm transition ${
-                            childActive
-                              ? "bg-black text-white"
-                              : "text-black/70 hover:bg-black/[0.05] hover:text-black"
-                          }`}
-                        >
-                          {child.label}
-                        </Link>
-                      );
-                    })}
+                        return (
+                          <Link
+                            key={child.label}
+                            href={child.href}
+                            onClick={onNavigate}
+                            className={`block rounded-xl px-3 py-2.5 text-sm transition ${
+                              childActive
+                                ? "bg-black text-white"
+                                : "text-black/70 hover:bg-black/[0.05] hover:text-black"
+                            }`}
+                          >
+                            {child.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           );
         }
@@ -94,19 +131,28 @@ function SidebarNav({ pathname, openMenus, toggleMenu, onNavigate }) {
             key={item.label}
             href={item.href}
             onClick={onNavigate}
-            className={`flex items-center gap-3 rounded-2xl px-3 py-3 transition ${
-              active ? "bg-black text-white" : "text-black hover:bg-black/[0.05]"
+            title={collapsed ? item.label : ""}
+            className={`flex items-center ${
+              collapsed ? "justify-center" : "gap-3"
+            } rounded-2xl px-3 py-3 transition ${
+              active
+                ? "bg-black text-white"
+                : "text-black hover:bg-black/[0.05]"
             }`}
           >
             <div
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                active ? "bg-white/10 text-white" : "bg-black/[0.06] text-black"
+                active
+                  ? "bg-white/10 text-white"
+                  : "bg-black/[0.06] text-black"
               }`}
             >
               <Icon size={17} />
             </div>
 
-            <p className="truncate text-sm font-medium">{item.label}</p>
+            {!collapsed ? (
+              <p className="truncate text-sm font-medium">{item.label}</p>
+            ) : null}
           </Link>
         );
       })}
@@ -114,17 +160,23 @@ function SidebarNav({ pathname, openMenus, toggleMenu, onNavigate }) {
   );
 }
 
-export default function Sidebar({ brandName = "FOTON POWER" }) {
+export default function Sidebar({
+  brandName = "FOTON POWER",
+  collapsed = false,
+  setCollapsed = () => {},
+}) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const defaultOpen = useMemo(() => {
     const map = {};
+
     SIDEBAR_ITEMS.forEach((item) => {
       if (item.children?.length) {
         map[item.label] = isItemActive(pathname, item);
       }
     });
+
     return map;
   }, [pathname]);
 
@@ -136,6 +188,7 @@ export default function Sidebar({ brandName = "FOTON POWER" }) {
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
+
     return () => {
       document.body.style.overflow = "";
     };
@@ -157,11 +210,14 @@ export default function Sidebar({ brandName = "FOTON POWER" }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black text-white">
             <Layers3 size={18} />
           </div>
+
           <div className="min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/45">
               Admin Panel
             </p>
-            <h2 className="truncate text-sm font-semibold text-black">{brandName}</h2>
+            <h2 className="truncate text-sm font-semibold text-black">
+              {brandName}
+            </h2>
           </div>
         </div>
 
@@ -174,37 +230,78 @@ export default function Sidebar({ brandName = "FOTON POWER" }) {
         </button>
       </div>
 
-      <aside className="hidden h-screen w-[280px] shrink-0 border-r border-black/10 bg-white lg:flex lg:flex-col">
-        <div className="border-b border-black/10 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-black text-white">
-              <Layers3 size={18} />
+      <aside
+        className={`fixed left-0 top-0 z-30 hidden h-screen border-r border-black/10 bg-white transition-all duration-200 lg:flex lg:flex-col ${
+          collapsed ? "w-[92px]" : "w-[280px]"
+        }`}
+      >
+        <div className="border-b border-black/10 px-4 py-4">
+          <div
+            className={`flex items-center ${
+              collapsed ? "justify-center" : "justify-between gap-3"
+            }`}
+          >
+            <div
+              className={`flex min-w-0 items-center ${
+                collapsed ? "justify-center" : "gap-3"
+              }`}
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-black text-white">
+                <Layers3 size={18} />
+              </div>
+
+              {!collapsed ? (
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
+                    Admin Panel
+                  </p>
+                  <h2 className="truncate text-base font-semibold text-black">
+                    {brandName}
+                  </h2>
+                </div>
+              ) : null}
             </div>
 
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/45">
-                Admin Panel
-              </p>
-              <h2 className="truncate text-base font-semibold text-black">{brandName}</h2>
-            </div>
+            {!collapsed ? (
+              <button
+                type="button"
+                onClick={() => setCollapsed(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-xl text-black transition hover:bg-black/[0.05]"
+              >
+                <ChevronsLeft size={18} />
+              </button>
+            ) : null}
           </div>
         </div>
+
+        {collapsed ? (
+          <div className="flex justify-center border-b border-black/10 px-3 py-3">
+            <button
+              type="button"
+              onClick={() => setCollapsed(false)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-black transition hover:bg-black/[0.05]"
+            >
+              <ChevronsRight size={18} />
+            </button>
+          </div>
+        ) : null}
 
         <div className="flex-1 overflow-y-auto px-3 py-4">
           <SidebarNav
             pathname={pathname}
             openMenus={openMenus}
             toggleMenu={toggleMenu}
+            collapsed={collapsed}
           />
         </div>
       </aside>
 
-      {mobileOpen && (
+      {mobileOpen ? (
         <div
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] lg:hidden"
           onClick={closeMobile}
         />
-      )}
+      ) : null}
 
       <aside
         className={`fixed inset-y-0 left-0 z-[60] w-[86%] max-w-[320px] transform border-r border-black/10 bg-white transition-transform duration-200 lg:hidden ${
@@ -221,7 +318,9 @@ export default function Sidebar({ brandName = "FOTON POWER" }) {
               <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/45">
                 Admin Panel
               </p>
-              <h2 className="truncate text-sm font-semibold text-black">{brandName}</h2>
+              <h2 className="truncate text-sm font-semibold text-black">
+                {brandName}
+              </h2>
             </div>
           </div>
 

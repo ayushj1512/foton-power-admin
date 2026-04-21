@@ -15,6 +15,7 @@ export default function RootLayout({ children }) {
   const fetchMe = useAdminUserStore((state) => state.fetchMe);
 
   const [mounted, setMounted] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -25,8 +26,8 @@ export default function RootLayout({ children }) {
     if (token) fetchMe();
   }, [mounted, token, fetchMe]);
 
-  // sirf sidebar hide hoga "/" pe
   const hideSidebar = pathname === "/";
+  const sidebarWidth = hideSidebar ? 0 : collapsed ? 92 : 280;
 
   if (!mounted) {
     return (
@@ -42,23 +43,24 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
-          
-          <div className="flex min-h-screen">
-            {/* Sidebar (conditionally hidden) */}
-            {!hideSidebar && <Sidebar />}
+          {!hideSidebar ? (
+            <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+          ) : null}
 
-            {/* Main Content */}
-            <div className="flex min-w-0 flex-1 flex-col">
-              <Header />
+          <div
+            className="flex min-h-screen min-w-0 flex-col transition-all duration-200"
+            style={{
+              marginLeft: `${sidebarWidth}px`,
+            }}
+          >
+            <Header />
 
-              <main className="flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
-                {children}
-              </main>
+            <main className="flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
+              {children}
+            </main>
 
-              <Footer />
-            </div>
+            <Footer />
           </div>
-
         </div>
       </body>
     </html>
