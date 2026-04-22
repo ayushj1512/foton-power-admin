@@ -16,6 +16,7 @@ import {
   User,
 } from "lucide-react";
 import { useAdminOrderStore } from "@/store/adminOrderStore";
+import OrderCouponDetailsCard from "@/components/orders/OrderCouponDetailsCard";
 
 const ORDER_STATUSES = [
   "processing",
@@ -373,6 +374,8 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
             </SectionCard>
+
+            <OrderCouponDetailsCard order={order} />
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <SectionCard title="Billing Address" icon={MapPin}>
@@ -761,38 +764,7 @@ export default function OrderDetailsPage() {
               </form>
             </SectionCard>
 
-            <SectionCard title="Meta Info" icon={Phone}>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-black/60">Source</p>
-                  <p className="font-medium text-black">{order.source || "website"}</p>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-black/60">Confirmed At</p>
-                  <p className="font-medium text-black">{formatDate(order.confirmedAt)}</p>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-black/60">Delivered At</p>
-                  <p className="font-medium text-black">{formatDate(order.deliveredAt)}</p>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-black/60">Cancelled At</p>
-                  <p className="font-medium text-black">{formatDate(order.cancelledAt)}</p>
-                </div>
-
-                {order.notes ? (
-                  <>
-                    <div className="my-2 h-px bg-black/10" />
-                    <div>
-                      <p className="mb-1 text-black/60">Customer Notes</p>
-                      <p className="rounded-2xl bg-black/[0.03] p-4 text-black/75">
-                        {order.notes}
-                      </p>
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            </SectionCard>
+      
           </div>
         </div>
       </div>

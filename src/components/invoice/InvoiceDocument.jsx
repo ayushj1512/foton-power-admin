@@ -8,12 +8,14 @@ import {
   SELLER,
 } from "@/constants/invoiceConstants";
 import {
+  FOTON_LOGO_URL,
   buildInvoiceNumber,
   formatCurrency,
   formatDate,
-  getAddressLines,
   getApproxGstRate,
+  getCustomerDetailsLines,
   getGstFromInclusive,
+  getItemHsnCode,
   getPaymentLabel,
   getTaxableFromInclusive,
 } from "./InvoiceHelpers";
@@ -29,9 +31,9 @@ export default function InvoiceDocument({
     ? PACKING_SLIP_SETTINGS.showSku
     : INVOICE_SETTINGS.showSku;
 
-  const billingLines = getAddressLines(order.billingAddress || {});
-  const shippingLines = getAddressLines(order.shippingAddress || {});
+  const customerLines = getCustomerDetailsLines(order);
   const gstRate = getApproxGstRate(order);
+  const items = Array.isArray(order.items) ? order.items : [];
 
   const sellerFullAddress = [
     SELLER.address,
@@ -41,329 +43,337 @@ export default function InvoiceDocument({
     .filter(Boolean)
     .join(" ");
 
+  const totalQty = items.reduce(
+    (acc, item) => acc + Number(item?.quantity || item?.qty || 0),
+    0
+  );
+
   return (
-    <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-black/5 print:rounded-none print:p-0 print:shadow-none print:ring-0">
-      <div className="rounded-[28px] border border-black/10 bg-white p-5 print:rounded-none print:border print:border-black/20 sm:p-6">
-        <div className="flex flex-col gap-5 border-b border-black/10 pb-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="relative h-16 w-16 overflow-hidden rounded-2xl bg-[#fafafa] ring-1 ring-black/5">
-              {SELLER.logo ? (
-                <Image
-                  src={SELLER.logo}
-                  alt={SELLER.brand || SELLER.name}
-                  fill
-                  sizes="64px"
-                  className="object-contain p-2"
-                />
-              ) : null}
+    <div className="invoice-doc mx-auto w-full max-w-[860px] bg-white text-black print:max-w-none">
+      <div className="overflow-hidden rounded-[20px] border border-black/10 bg-white shadow-[0_16px_40px_rgba(0,0,0,0.05)] print:rounded-none print:border-black/10 print:shadow-none">
+        <div className="p-[22px] print:p-4">
+          <div className="grid gap-[18px] border-b border-black/10 pb-[14px] sm:grid-cols-[1.25fr,0.75fr]">
+            <div>
+              <Image
+                src={FOTON_LOGO_URL}
+                alt={SELLER.name || "FOTON"}
+                width={164}
+                height={50}
+                className="mb-[10px] h-[50px] w-[164px] object-contain object-left"
+                priority
+              />
+
+              <p className="mb-[6px] text-[10px] font-bold uppercase tracking-[0.16em] text-black/50">
+                {isPacking ? "Dispatch Address" : "Billing Address"}
+              </p>
+
+              <p className="mb-1 text-[14px] font-bold text-black">
+                {SELLER.name || "FOTON"}
+              </p>
+
+              <div className="space-y-0.5 text-[11px] leading-[1.55] text-black/70">
+                <p>{sellerFullAddress || "-"}</p>
+                {!isPacking && <p>GSTIN: {SELLER.gstin || "-"}</p>}
+                {SELLER.pan ? <p>PAN: {SELLER.pan}</p> : null}
+                <p>Email: {SELLER.email || "-"}</p>
+                <p>Phone: {SELLER.phone || "-"}</p>
+              </div>
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold tracking-[-0.03em]">
-                {SELLER.name}
-              </h2>
+              <div className="rounded-2xl border border-black/[0.05] bg-[#f7f7f8] px-[14px] py-3">
+                <p className="mb-2 text-[16px] font-bold tracking-[0.02em] text-black">
+                  {isPacking ? "PACKING SLIP" : "TAX INVOICE"}
+                </p>
 
-              <p className="mt-1 max-w-md text-sm leading-6 text-black/60">
-                {sellerFullAddress}
-              </p>
-
-              <div className="mt-2 space-y-1 text-xs text-black/55">
-                <p>Phone: {SELLER.phone || "-"}</p>
-                <p>Email: {SELLER.email || "-"}</p>
-                <p>Website: {SELLER.website || "-"}</p>
-                {!isPacking && <p>GSTIN: {SELLER.gstin || "-"}</p>}
+                <div className="space-y-[5px]">
+                  {!isPacking && (
+                    <MetaRow
+                      label="Invoice No"
+                      value={buildInvoiceNumber(order)}
+                    />
+                  )}
+                  <MetaRow label="Order No" value={order.orderNumber || "-"} />
+                  <MetaRow
+                    label={isPacking ? "Date" : "Date"}
+                    value={formatDate(order.createdAt)}
+                  />
+                  {!isPacking && (
+                    <MetaRow
+                      label="Payment"
+                      value={getPaymentLabel(order?.payment?.method)}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl bg-[#fafafa] px-4 py-3 text-sm ring-1 ring-black/5 sm:min-w-[250px]">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-black/45">
-              {isPacking ? "Packing Slip" : "Tax Invoice"}
+          <div className="border-b border-black/10 py-[14px]">
+            <p className="mb-[6px] text-[10px] font-bold uppercase tracking-[0.14em] text-black/55">
+              Customer Details
             </p>
 
-            <div className="mt-3 space-y-1.5">
-              {!isPacking && (
-                <InfoRow label="Invoice No." value={buildInvoiceNumber(order)} />
-              )}
-
-              <InfoRow label="Order No." value={order.orderNumber || "-"} />
-
-              <InfoRow
-                label={isPacking ? "Created" : "Invoice Date"}
-                value={formatDate(order.createdAt)}
-              />
-
-              {!isPacking && (
-                <InfoRow
-                  label="Payment"
-                  value={getPaymentLabel(order?.payment?.method)}
-                />
+            <div className="space-y-0.5 text-[11px] leading-[1.55] text-black/70">
+              {customerLines.length ? (
+                customerLines.map((line, i) => <p key={i}>{line}</p>)
+              ) : (
+                <p>-</p>
               )}
             </div>
           </div>
-        </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <AddressCard title="Billing Address" lines={billingLines} />
-          <AddressCard title="Shipping Address" lines={shippingLines} />
-        </div>
+          {!isPacking && (
+            <div className="py-[10px] text-[11px] text-black/72">
+              <span className="font-semibold text-black/80">Payment Mode:</span>{" "}
+              {getPaymentLabel(order?.payment?.method)}
+              {!!Number(order?.couponDiscount || 0) && (
+                <>
+                  {"  |  "}
+                  <span className="font-semibold text-black/80">Discount:</span>{" "}
+                  -{formatCurrency(order?.couponDiscount || 0)}
+                </>
+              )}
+            </div>
+          )}
 
-        <div className="mt-5 overflow-hidden rounded-2xl border border-black/10">
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse text-sm">
-              <thead className="bg-[#fafafa]">
-                <tr className="border-b border-black/10">
-                  <TableHead>#</TableHead>
-                  <TableHead>Item</TableHead>
-                  {showSku && <TableHead>SKU</TableHead>}
-                  <TableHead>Qty</TableHead>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-black/10 text-left">
+                <TableHead className="w-[5%]">#</TableHead>
+                <TableHead className="w-[41%]">Item</TableHead>
+                {showSku && <TableHead className="w-[12%]">SKU</TableHead>}
+                {!isPacking && <TableHead className="w-[13%]">Code</TableHead>}
+                {!isPacking && <TableHead className="w-[14%]">HSN</TableHead>}
+                <TableHead align="center" className="w-[8%]">
+                  Qty
+                </TableHead>
+                {!isPacking && (
+                  <>
+                    <TableHead align="right" className="w-[9%]">
+                      Price
+                    </TableHead>
+                    <TableHead align="right" className="w-[10%]">
+                      GST
+                    </TableHead>
+                    <TableHead align="right" className="w-[12%]">
+                      Total
+                    </TableHead>
+                  </>
+                )}
+              </tr>
+            </thead>
 
-                  {!isPacking && (
-                    <>
-                      <TableHead align="right">Unit Price</TableHead>
-                      <TableHead align="right">Taxable</TableHead>
-                      <TableHead align="right">GST</TableHead>
-                      <TableHead align="right">Total</TableHead>
-                    </>
-                  )}
-                </tr>
-              </thead>
-
-              <tbody>
-                {(order.items || []).map((item, index) => {
+            <tbody>
+              {items.length ? (
+                items.map((item, idx) => {
+                  const qty = Number(item?.quantity || item?.qty || 0);
                   const lineTotal = Number(item?.linePayableTotal || 0);
-                  const taxable = getTaxableFromInclusive(lineTotal, gstRate);
                   const gstAmount = getGstFromInclusive(lineTotal, gstRate);
+                  const hsn = getItemHsnCode(item);
 
                   return (
                     <tr
-                      key={item?._id || `${item?.sku || "item"}-${index}`}
-                      className="border-b border-black/10 last:border-b-0"
+                      key={item?._id || `${item?.sku || "item"}-${idx}`}
+                      className="border-b border-black/[0.08] align-top last:border-b-0"
                     >
-                      <td className="px-4 py-3 align-top text-black/70">
-                        {index + 1}
+                      <td className="py-[10px] pr-2 text-[11px] text-black/74">
+                        {idx + 1}
                       </td>
 
-                      <td className="px-4 py-3 align-top">
-                        <p className="font-medium text-black">
+                      <td className="py-[10px] pr-2">
+                        <div className="text-[11px] font-semibold text-black">
                           {item?.name || "-"}
-                        </p>
+                        </div>
 
-                        <div className="mt-1 text-xs text-black/50">
-                          {item?.productCode ? (
-                            <p>Code: {item.productCode}</p>
-                          ) : null}
-                          {item?.color ? <p>Color: {item.color}</p> : null}
-                          {item?.size ? <p>Size: {item.size}</p> : null}
-                          {!isPacking &&
-                          INVOICE_SETTINGS.showHsn &&
-                          item?.hsnCode ? (
-                            <p>HSN: {item.hsnCode}</p>
-                          ) : null}
+                        <div className="mt-[3px] text-[10px] text-black/50">
+                          {item?.color ? `Color: ${item.color}` : "Color: -"}
                         </div>
                       </td>
 
                       {showSku && (
-                        <td className="px-4 py-3 align-top text-black/70">
+                        <td className="py-[10px] pr-2 text-[11px] text-black/74">
                           {item?.sku || "-"}
                         </td>
                       )}
 
-                      <td className="px-4 py-3 align-top text-black/70">
-                        {item?.quantity || 0}
+                      {!isPacking && (
+                        <td className="py-[10px] pr-2 text-[11px] text-black/74">
+                          {item?.productCode || "-"}
+                        </td>
+                      )}
+
+                      {!isPacking && (
+                        <td className="py-[10px] pr-2 text-[11px] text-black/74">
+                          {hsn}
+                        </td>
+                      )}
+
+                      <td className="py-[10px] text-center text-[11px] text-black/74">
+                        {qty}
                       </td>
 
                       {!isPacking && (
                         <>
-                          <td className="px-4 py-3 text-right align-top text-black/70">
+                          <td className="py-[10px] text-right text-[11px] text-black/74">
                             {formatCurrency(item?.unitPayable || 0)}
                           </td>
-                          <td className="px-4 py-3 text-right align-top text-black/70">
-                            {formatCurrency(taxable)}
-                          </td>
-                          <td className="px-4 py-3 text-right align-top text-black/70">
+                          <td className="py-[10px] text-right text-[11px] text-black/74">
                             {formatCurrency(gstAmount)}
                           </td>
-                          <td className="px-4 py-3 text-right align-top font-medium text-black">
+                          <td className="py-[10px] text-right text-[11px] font-medium text-black">
                             {formatCurrency(lineTotal)}
                           </td>
                         </>
                       )}
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                })
+              ) : (
+                <tr>
+                  <td
+                    colSpan={showSku ? (isPacking ? 4 : 8) : isPacking ? 2 : 7}
+                    className="py-8 text-center text-[11px] text-black/45"
+                  >
+                    No items found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
 
-        {!isPacking && (
-          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr,340px]">
-            <div className="rounded-2xl border border-black/10 p-4">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/45">
-                Notes & Terms
-              </p>
+          <div
+            className={`mt-[6px] grid gap-[18px] border-t border-black/10 pt-[14px] ${
+              isPacking ? "sm:grid-cols-[1fr,240px]" : "sm:grid-cols-[1fr,240px]"
+            }`}
+          >
+            <div>
+              {!isPacking ? (
+                <>
+                  <CompactInfoCard title="Notes">
+                    <p>{INVOICE_SETTINGS.footerNote}</p>
+                  </CompactInfoCard>
 
-              <div className="mt-3 space-y-2 text-sm text-black/65">
-                <p>{INVOICE_SETTINGS.footerNote}</p>
+                  {!!INVOICE_SETTINGS.terms?.length && (
+                    <CompactInfoCard title="Terms" className="mt-[10px]">
+                      <ul className="space-y-1 pl-4">
+                        {INVOICE_SETTINGS.terms.map((term, index) => (
+                          <li key={index} className="list-disc">
+                            {term}
+                          </li>
+                        ))}
+                      </ul>
+                    </CompactInfoCard>
+                  )}
+                </>
+              ) : (
+                <CompactInfoCard title="Packing Summary">
+                  <div className="space-y-1 text-[11px]">
+                    <p>Order No: {order.orderNumber || "-"}</p>
+                    <p>Total Items: {items.length}</p>
+                    <p>Total Qty: {totalQty}</p>
+                  </div>
+                </CompactInfoCard>
+              )}
+            </div>
 
-                {!!INVOICE_SETTINGS.terms?.length && (
-                  <ul className="list-disc space-y-1 pl-5">
-                    {INVOICE_SETTINGS.terms.map((term, index) => (
-                      <li key={index}>{term}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              {!!order?.shipment?.courierName && (
-                <div className="mt-4 rounded-2xl bg-[#fafafa] p-4 ring-1 ring-black/5">
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/45">
-                    Shipment Details
+            <div>
+              {!isPacking ? (
+                <div className="rounded-2xl border border-black/[0.05] bg-[#f7f7f8] p-[14px]">
+                  <p className="mb-[6px] text-[10px] font-bold uppercase tracking-[0.14em] text-black/55">
+                    Totals
                   </p>
 
-                  <div className="mt-2 space-y-1.5 text-sm text-black/65">
-                    <p>Courier: {order?.shipment?.courierName || "-"}</p>
-                    <p>AWB: {order?.shipment?.awbNumber || "-"}</p>
-                    <p>Tracking: {order?.shipment?.trackingNumber || "-"}</p>
+                  <div className="space-y-[5px]">
+                    <SummaryRow
+                      label="Subtotal"
+                      value={formatCurrency(Number(order?.subtotal || 0))}
+                    />
+
+                    {!!Number(order?.couponDiscount || 0) && (
+                      <SummaryRow
+                        label="Discount"
+                        value={`-${formatCurrency(
+                          Number(order?.couponDiscount || 0)
+                        )}`}
+                      />
+                    )}
+
+                    <SummaryRow
+                      label="Tax"
+                      value={formatCurrency(Number(order?.taxAmount || 0))}
+                    />
+
+                    <div className="mt-[10px] border-t border-black/10 pt-[10px]">
+                      <SummaryRow
+                        label="Grand Total"
+                        value={formatCurrency(Number(order?.payableAmount || 0))}
+                        strong
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-black/[0.05] bg-[#f7f7f8] p-[14px]">
+                  <p className="mb-[6px] text-[10px] font-bold uppercase tracking-[0.14em] text-black/55">
+                    Totals
+                  </p>
+                  <div className="space-y-[5px]">
+                    <SummaryRow label="Items" value={items.length} />
+                    <SummaryRow label="Qty" value={totalQty} />
                   </div>
                 </div>
               )}
             </div>
-
-            <div className="rounded-2xl border border-black/10 p-4">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/45">
-                Amount Summary
-              </p>
-
-              <div className="mt-3 space-y-2 text-sm">
-                <SummaryRow
-                  label="Subtotal"
-                  value={formatCurrency(order?.subtotal || 0)}
-                />
-
-                {!!Number(order?.couponDiscount || 0) && (
-                  <SummaryRow
-                    label="Coupon Discount"
-                    value={`- ${formatCurrency(order?.couponDiscount || 0)}`}
-                  />
-                )}
-
-                {!!Number(order?.additionalDiscount || 0) && (
-                  <SummaryRow
-                    label="Additional Discount"
-                    value={`- ${formatCurrency(
-                      order?.additionalDiscount || 0
-                    )}`}
-                  />
-                )}
-
-                {!!Number(order?.shippingCharge || 0) && (
-                  <SummaryRow
-                    label="Shipping"
-                    value={formatCurrency(order?.shippingCharge || 0)}
-                  />
-                )}
-
-                {!!Number(order?.codCharge || 0) && (
-                  <SummaryRow
-                    label="COD Charges"
-                    value={formatCurrency(order?.codCharge || 0)}
-                  />
-                )}
-
-                {!!Number(order?.taxAmount || 0) && (
-                  <>
-                    <SummaryRow
-                      label={`GST (${gstRate}%)`}
-                      value={formatCurrency(order?.taxAmount || 0)}
-                    />
-                    <SummaryRow
-                      label="CGST"
-                      value={formatCurrency(Number(order?.taxAmount || 0) / 2)}
-                    />
-                    <SummaryRow
-                      label="SGST"
-                      value={formatCurrency(Number(order?.taxAmount || 0) / 2)}
-                    />
-                  </>
-                )}
-
-                {!!Number(order?.roundOff || 0) && (
-                  <SummaryRow
-                    label="Round Off"
-                    value={formatCurrency(order?.roundOff || 0)}
-                  />
-                )}
-
-                <div className="my-2 border-t border-dashed border-black/10" />
-
-                <SummaryRow
-                  label="Grand Total"
-                  value={formatCurrency(order?.payableAmount || 0)}
-                  strong
-                />
-              </div>
-
-              <div className="mt-5 border-t border-black/10 pt-4">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/45">
-                  For {SELLER.name}
-                </p>
-
-                {SELLER.signature ? (
-                  <div className="relative mt-3 h-16 w-32">
-                    <Image
-                      src={SELLER.signature}
-                      alt="Authorized Signature"
-                      fill
-                      sizes="128px"
-                      className="object-contain object-left"
-                    />
-                  </div>
-                ) : null}
-
-                <p className="mt-2 text-sm text-black/60">
-                  Authorized Signatory
-                </p>
-              </div>
-            </div>
           </div>
-        )}
+
+          <div className="mt-[14px] border-t border-black/10 pt-[10px] text-center text-[10px] leading-[1.55] text-black/70">
+            <p>
+              <span className="font-semibold text-black/80">
+                Registered Address:
+              </span>{" "}
+              {sellerFullAddress || "-"}
+            </p>
+
+            {!isPacking && (
+              <p>
+                <span className="font-semibold text-black/80">GSTIN:</span>{" "}
+                {SELLER.gstin || "-"}
+                {SELLER.pan ? (
+                  <>
+                    {"  |  "}
+                    <span className="font-semibold text-black/80">PAN:</span>{" "}
+                    {SELLER.pan}
+                  </>
+                ) : null}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function InfoRow({ label, value }) {
+function MetaRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-black/55">{label}</span>
-      <span className="font-medium">{value}</span>
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[11px] text-black/55">{label}</span>
+      <span className="text-[11px] font-semibold text-black">{value || "-"}</span>
     </div>
   );
 }
 
-function AddressCard({ title, lines = [] }) {
-  return (
-    <div className="rounded-2xl border border-black/10 p-4">
-      <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/45">
-        {title}
-      </p>
-      <div className="mt-3 space-y-1.5 text-sm text-black/70">
-        {lines.map((line, i) => (
-          <p key={i}>{line}</p>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TableHead({ children, align = "left" }) {
+function TableHead({ children, align = "left", className = "" }) {
   return (
     <th
-      className={`px-4 py-3 font-medium text-black/65 ${
-        align === "right" ? "text-right" : "text-left"
-      }`}
+      className={`py-2 pr-2 text-[9px] font-bold uppercase tracking-[0.12em] text-black/52 ${
+        align === "right"
+          ? "text-right"
+          : align === "center"
+          ? "text-center"
+          : "text-left"
+      } ${className}`}
     >
       {children}
     </th>
@@ -372,13 +382,36 @@ function TableHead({ children, align = "left" }) {
 
 function SummaryRow({ label, value, strong = false }) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <span className={strong ? "font-semibold text-black" : "text-black/60"}>
+    <div className="flex items-center justify-between gap-3">
+      <span
+        className={
+          strong
+            ? "text-[12px] font-bold text-black"
+            : "text-[11px] text-black/60"
+        }
+      >
         {label}
       </span>
-      <span className={strong ? "font-semibold text-black" : "text-black/80"}>
+      <span
+        className={
+          strong
+            ? "text-[12px] font-bold text-black"
+            : "text-[11px] font-semibold text-black/82"
+        }
+      >
         {value}
       </span>
+    </div>
+  );
+}
+
+function CompactInfoCard({ title, children, className = "" }) {
+  return (
+    <div className={`rounded-2xl border border-black/[0.05] bg-[#f7f7f8] p-[14px] ${className}`}>
+      <p className="mb-[6px] text-[10px] font-bold uppercase tracking-[0.14em] text-black/55">
+        {title}
+      </p>
+      <div className="text-[11px] leading-[1.55] text-black/70">{children}</div>
     </div>
   );
 }

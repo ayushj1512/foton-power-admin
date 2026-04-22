@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FOTON Invoice Template Preview</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      :root {
+        --bg: #f3f4f6;
+        --card: #ffffff;
+        --muted: #6b7280;
+        --soft: #f7f7f8;
+        --line: rgba(17, 24, 39, 0.1);
+        --text: #111827;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+        color: var(--text);
+        padding: 20px;
+      }
+
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+      }
+
+      .sheet {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05);
+      }
+
+      .inner {
+        padding: 22px;
+      }
+
+      .top {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 18px;
+        align-items: start;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .logo {
+        width: 164px;
+        height: 50px;
+        object-fit: contain;
+        object-position: left center;
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      .eyebrow {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(17, 24, 39, 0.48);
+        margin: 0 0 6px;
+      }
+
+      .seller-name {
+        font-size: 14px;
+        font-weight: 700;
+        margin: 0 0 4px;
+      }
+
+      .seller-lines,
+      .meta-list,
+      .address-lines,
+      .note-text,
+      .footer {
+        font-size: 11px;
+        line-height: 1.55;
+        color: rgba(17, 24, 39, 0.72);
+      }
+
+      .meta-card,
+      .totals-card,
+      .note-card {
+        background: var(--soft);
+        border: 1px solid rgba(17, 24, 39, 0.05);
+        border-radius: 16px;
+      }
+
+      .meta-card {
+        padding: 12px 14px;
+      }
+
+      .doc-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        letter-spacing: 0.02em;
+      }
+
+      .meta-row,
+      .summary-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .meta-row + .meta-row,
+      .summary-row + .summary-row {
+        margin-top: 5px;
+      }
+
+      .meta-row span:first-child,
+      .summary-row span:first-child {
+        color: rgba(17, 24, 39, 0.55);
+      }
+
+      .meta-row span:last-child,
+      .summary-row span:last-child {
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .address-wrap {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(17, 24, 39, 0.52);
+        margin: 0 0 6px;
+      }
+
+      .payment-line {
+        padding: 10px 0 12px;
+        font-size: 11px;
+        color: rgba(17, 24, 39, 0.72);
+      }
+
+      .payment-line strong {
+        color: rgba(17, 24, 39, 0.82);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead th {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(17, 24, 39, 0.52);
+        text-align: left;
+        padding: 8px 8px 8px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      tbody td {
+        font-size: 11px;
+        color: rgba(17, 24, 39, 0.74);
+        padding: 10px 8px 10px 0;
+        border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+        vertical-align: top;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      .item-name {
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 3px;
+      }
+
+      .item-meta {
+        font-size: 10px;
+        color: rgba(17, 24, 39, 0.48);
+      }
+
+      .bottom {
+        display: grid;
+        grid-template-columns: 1fr 240px;
+        gap: 18px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        margin-top: 6px;
+      }
+
+      .note-card,
+      .totals-card {
+        padding: 14px;
+      }
+
+      .totals-card .summary-row.total {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+      }
+
+      .totals-card .summary-row.total span {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .signature {
+        margin-top: 14px;
+        text-align: center;
+        font-size: 10px;
+        color: rgba(17, 24, 39, 0.75);
+      }
+
+      .signature img {
+        width: 104px;
+        height: 48px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto 4px;
+      }
+
+      .footer {
+        margin-top: 14px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+        text-align: center;
+        font-size: 10px;
+      }
+
+      @media print {
+        body {
+          background: #fff;
+          padding: 0;
+        }
+
+        .page {
+          max-width: none;
+        }
+
+        .sheet {
+          border-radius: 0;
+          box-shadow: none;
+          border: 1px solid rgba(17, 24, 39, 0.12);
+        }
+
+        .inner {
+          padding: 16px;
+        }
+      }
+
+      @media (max-width: 760px) {
+        body {
+          padding: 10px;
+        }
+
+        .inner {
+          padding: 16px;
+        }
+
+        .top,
+        .bottom {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="sheet">
+        <div class="inner">
+          <div class="top">
+            <div>
+              <img
+                class="logo"
+                src="https://res.cloudinary.com/dcayfmx5m/image/upload/v1776768134/foton_media/general/zvur9sbtdv9mrubnbdun.png"
+                alt="FOTON"
+              />
+
+              <p class="eyebrow">Billing Address</p>
+              <p class="seller-name">FOTON</p>
+              <div class="seller-lines">
+                <div>Dispatch & Return Address Line 1, Business Park</div>
+                <div>New Delhi, Delhi, 110001, India</div>
+                <div>GSTIN: 07ABCDE1234F1Z5</div>
+                <div>PAN: ABCDE1234F</div>
+                <div>Email: support@foton.com</div>
+                <div>Phone: +91 99999 99999</div>
+              </div>
+            </div>
+
+            <div>
+              <div class="meta-card">
+                <p class="doc-title">TAX INVOICE</p>
+                <div class="meta-list">
+                  <div class="meta-row"><span>Invoice No</span><span>5</span></div>
+                  <div class="meta-row"><span>Order No</span><span>5</span></div>
+                  <div class="meta-row"><span>Date</span><span>22/04/2026</span></div>
+                  <div class="meta-row"><span>Payment</span><span>Cash on Delivery</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="address-wrap">
+            <p class="section-title">Customer Details</p>
+            <div class="address-lines">
+              <div>testing</div>
+              <div>test, test</div>
+              <div>Central Delhi, Delhi, 110011</div>
+              <div>India</div>
+              <div>Phone: 9911001199</div>
+              <div>Email: testing@gmail.com</div>
+            </div>
+          </div>
+
+          <div class="payment-line">
+            <strong>Payment Mode:</strong> Cash on Delivery
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            <strong>Discount:</strong> -₹599.80
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 41%">Item</th>
+                <th style="width: 13%">Code</th>
+                <th style="width: 14%">HSN</th>
+                <th style="width: 8%" class="text-center">Qty</th>
+                <th style="width: 9%" class="text-right">Price</th>
+                <th style="width: 10%" class="text-right">GST</th>
+                <th style="width: 12%" class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>
+                  <div class="item-name">
+                    Ulanzi VL 119 RGB Light Stick 2500K-9000K, CRI 95+, 2000mAh LED
+                  </div>
+                  <div class="item-meta">Color: -</div>
+                </td>
+                <td>00070</td>
+                <td>62105000</td>
+                <td class="text-center">2</td>
+                <td class="text-right">₹2,999.00</td>
+                <td class="text-right">₹257.06</td>
+                <td class="text-right">₹5,998.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="bottom">
+            <div>
+              <div class="note-card">
+                <p class="section-title">Notes</p>
+                <div class="note-text">
+                  Thank you for shopping with FOTON. This is a computer-generated invoice and does not require a physical stamp.
+                </div>
+              </div>
+
+              <div class="note-card" style="margin-top: 10px;">
+                <p class="section-title">Terms</p>
+                <div class="note-text">
+                  <div>• Goods once sold will be subject to the brand return policy.</div>
+                  <div>• Please retain this invoice for warranty and support purposes.</div>
+                  <div>• All disputes are subject to local jurisdiction only.</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="totals-card">
+                <p class="section-title">Totals</p>
+                <div class="summary-row"><span>Subtotal</span><span>₹5,998.00</span></div>
+                <div class="summary-row"><span>Discount</span><span>-₹599.80</span></div>
+                <div class="summary-row"><span>Tax</span><span>₹0.00</span></div>
+                <div class="summary-row total"><span>Grand Total</span><span>₹5,398.20</span></div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="footer">
+            <div><strong>Registered Address:</strong> Dispatch & Return Address Line 1, Business Park, New Delhi, Delhi, 110001, India</div>
+            <div><strong>GSTIN:</strong> 07ABCDE1234F1Z5 &nbsp; | &nbsp; <strong>PAN:</strong> ABCDE1234F</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

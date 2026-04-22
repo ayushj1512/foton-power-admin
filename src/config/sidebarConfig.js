@@ -22,17 +22,8 @@ export const SIDEBAR_ITEMS = [
     icon: Package,
     children: [
       { label: "All Orders", href: "/orders/list" },
-      { label: "Processing", href: "/orders/list?orderStatus=processing" },
-      { label: "Pending", href: "/orders/list?orderStatus=pending" },
-      { label: "Packed", href: "/orders/list?orderStatus=packed" },
-      { label: "Picked", href: "/orders/list?orderStatus=picked" },
-      { label: "Shipped", href: "/orders/list?orderStatus=shipped" },
-      { label: "Delivered", href: "/orders/list?orderStatus=delivered" },
-      { label: "Cancelled", href: "/orders/list?orderStatus=cancelled" },
-      { label: "Returned", href: "/orders/list?orderStatus=returned" },
-      { label: "Refunded", href: "/orders/list?orderStatus=refunded" },
-      { label: "RTO", href: "/orders/list?orderStatus=rto" },
-      { label: "Pending Payments", href: "/orders/list?paymentStatus=pending" },
+         { label: "Invoices", href: "/orders/invoice" },
+
     ],
   },
 
