@@ -9,7 +9,6 @@ import {
   CreditCard,
   MapPin,
   Package,
-  Phone,
   RefreshCcw,
   ShoppingBag,
   Truck,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAdminOrderStore } from "@/store/adminOrderStore";
 import OrderCouponDetailsCard from "@/components/orders/OrderCouponDetailsCard";
+import ShiprocketTrackingSyncCard from "@/components/orders/ShiprocketTrackingSyncCard";
 
 const ORDER_STATUSES = [
   "processing",
@@ -57,17 +57,16 @@ function formatCurrency(value) {
 
 function formatDate(value) {
   if (!value) return "—";
-  try {
-    return new Date(value).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "—";
-  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function StatusBadge({ value }) {
@@ -78,7 +77,57 @@ function StatusBadge({ value }) {
   );
 }
 
-function SectionCard({ title, icon: Icon, children, action }) {
+function Field({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-black/[0.025] p-4">
+      <p className="text-xs text-black/50">{label}</p>
+      <p className="mt-1 font-medium text-black">{value || "—"}</p>
+    </div>
+  );
+}
+
+function Input(props) {
+  return (
+    <input
+      {...props}
+      className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm text-black outline-none ring-1 ring-black/5 placeholder:text-black/35"
+    />
+  );
+}
+
+function Select({ children, ...props }) {
+  return (
+    <select
+      {...props}
+      className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm text-black outline-none ring-1 ring-black/5"
+    >
+      {children}
+    </select>
+  );
+}
+
+function Textarea(props) {
+  return (
+    <textarea
+      {...props}
+      className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm text-black outline-none ring-1 ring-black/5 placeholder:text-black/35"
+    />
+  );
+}
+
+function SubmitButton({ children, disabled }) {
+  return (
+    <button
+      type="submit"
+      disabled={disabled}
+      className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {children}
+    </button>
+  );
+}
+
+function SectionCard({ title, icon: Icon, action, children }) {
   return (
     <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -95,20 +144,38 @@ function SectionCard({ title, icon: Icon, children, action }) {
   );
 }
 
+function AddressBlock({ address }) {
+  return (
+    <div className="space-y-2 text-sm text-black/75">
+      <p className="font-medium text-black">{address?.fullName || "—"}</p>
+      <p>{address?.phone || "—"}</p>
+      <p>{address?.email || "—"}</p>
+      <p>{address?.addressLine1 || "—"}</p>
+      {address?.addressLine2 ? <p>{address.addressLine2}</p> : null}
+      {address?.landmark ? <p>{address.landmark}</p> : null}
+      <p>
+        {address?.city || "—"}, {address?.state || "—"} - {address?.pincode || "—"}
+      </p>
+      <p>{address?.country || "India"}</p>
+    </div>
+  );
+}
+
 export default function OrderDetailsPage() {
   const params = useParams();
   const id = params?.id;
 
   const {
     order,
+    error,
     isFetchingOrder,
     isSubmitting,
-    error,
     fetchOrderById,
     updateOrderStatus,
     updateOrderPayment,
     updateShipmentDetails,
     clearError,
+    setOrder,
   } = useAdminOrderStore();
 
   const [statusForm, setStatusForm] = useState({
@@ -161,11 +228,23 @@ export default function OrderDetailsPage() {
     });
 
     setShipmentForm({
-      courierName: order.shipment?.courierName || "",
-      awbNumber: order.shipment?.awbNumber || "",
+      courierName:
+        order.shipment?.courierName ||
+        order.shipment?.shiprocket?.courier_name ||
+        "",
+      awbNumber:
+        order.shipment?.awbNumber ||
+        order.shipment?.shiprocket?.awb_code ||
+        "",
       trackingNumber: order.shipment?.trackingNumber || "",
-      trackingUrl: order.shipment?.trackingUrl || "",
-      status: order.shipment?.status || "",
+      trackingUrl:
+        order.shipment?.trackingUrl ||
+        order.shipment?.shiprocket?.tracking_url ||
+        "",
+      status:
+        order.shipment?.status ||
+        order.shipment?.shiprocket?.current_status ||
+        "",
       labelUrl: order.shipment?.labelUrl || "",
       invoiceUrl: order.shipment?.invoiceUrl || "",
     });
@@ -210,10 +289,8 @@ export default function OrderDetailsPage() {
   if (isFetchingOrder) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <p className="text-sm text-black/60">Loading order details...</p>
-          </div>
+        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <p className="text-sm text-black/60">Loading order details...</p>
         </div>
       </div>
     );
@@ -222,16 +299,14 @@ export default function OrderDetailsPage() {
   if (!order) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <p className="text-sm font-medium text-black">Order not found.</p>
-            <Link
-              href="/orders/list"
-              className="mt-4 inline-flex rounded-2xl bg-black px-4 py-2 text-sm font-medium text-white"
-            >
-              Back to orders
-            </Link>
-          </div>
+        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <p className="text-sm font-medium text-black">Order not found.</p>
+          <Link
+            href="/orders/list"
+            className="mt-4 inline-flex rounded-2xl bg-black px-4 py-2 text-sm font-medium text-white"
+          >
+            Back to orders
+          </Link>
         </div>
       </div>
     );
@@ -239,9 +314,9 @@ export default function OrderDetailsPage() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <div className="flex flex-col gap-4 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-6">
+        <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <Link
                 href="/orders/list"
@@ -293,13 +368,13 @@ export default function OrderDetailsPage() {
           </div>
 
           {error ? (
-            <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
               {error}
             </div>
           ) : null}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.35fr_0.95fr]">
           <div className="flex flex-col gap-6">
             <SectionCard title="Order Items" icon={ShoppingBag}>
               <div className="space-y-4">
@@ -350,28 +425,10 @@ export default function OrderDetailsPage() {
 
             <SectionCard title="Customer Details" icon={User}>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl bg-black/[0.025] p-4">
-                  <p className="text-xs text-black/50">Customer Name</p>
-                  <p className="mt-1 font-medium text-black">{customerName}</p>
-                </div>
-                <div className="rounded-2xl bg-black/[0.025] p-4">
-                  <p className="text-xs text-black/50">Customer Code</p>
-                  <p className="mt-1 font-medium text-black">
-                    {order.customer?.customerCode || "—"}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-black/[0.025] p-4">
-                  <p className="text-xs text-black/50">Phone</p>
-                  <p className="mt-1 font-medium text-black">
-                    {order.customer?.phone || "—"}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-black/[0.025] p-4">
-                  <p className="text-xs text-black/50">Email</p>
-                  <p className="mt-1 font-medium text-black">
-                    {order.customer?.email || "—"}
-                  </p>
-                </div>
+                <Field label="Customer Name" value={customerName} />
+                <Field label="Customer Code" value={order.customer?.customerCode} />
+                <Field label="Phone" value={order.customer?.phone} />
+                <Field label="Email" value={order.customer?.email} />
               </div>
             </SectionCard>
 
@@ -379,49 +436,11 @@ export default function OrderDetailsPage() {
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <SectionCard title="Billing Address" icon={MapPin}>
-                <div className="space-y-2 text-sm text-black/75">
-                  <p className="font-medium text-black">
-                    {order.billingAddress?.fullName || "—"}
-                  </p>
-                  <p>{order.billingAddress?.phone || "—"}</p>
-                  <p>{order.billingAddress?.email || "—"}</p>
-                  <p>{order.billingAddress?.addressLine1 || "—"}</p>
-                  {order.billingAddress?.addressLine2 ? (
-                    <p>{order.billingAddress.addressLine2}</p>
-                  ) : null}
-                  {order.billingAddress?.landmark ? (
-                    <p>{order.billingAddress.landmark}</p>
-                  ) : null}
-                  <p>
-                    {order.billingAddress?.city || "—"},{" "}
-                    {order.billingAddress?.state || "—"} -{" "}
-                    {order.billingAddress?.pincode || "—"}
-                  </p>
-                  <p>{order.billingAddress?.country || "India"}</p>
-                </div>
+                <AddressBlock address={order.billingAddress} />
               </SectionCard>
 
               <SectionCard title="Shipping Address" icon={Truck}>
-                <div className="space-y-2 text-sm text-black/75">
-                  <p className="font-medium text-black">
-                    {order.shippingAddress?.fullName || "—"}
-                  </p>
-                  <p>{order.shippingAddress?.phone || "—"}</p>
-                  <p>{order.shippingAddress?.email || "—"}</p>
-                  <p>{order.shippingAddress?.addressLine1 || "—"}</p>
-                  {order.shippingAddress?.addressLine2 ? (
-                    <p>{order.shippingAddress.addressLine2}</p>
-                  ) : null}
-                  {order.shippingAddress?.landmark ? (
-                    <p>{order.shippingAddress.landmark}</p>
-                  ) : null}
-                  <p>
-                    {order.shippingAddress?.city || "—"},{" "}
-                    {order.shippingAddress?.state || "—"} -{" "}
-                    {order.shippingAddress?.pincode || "—"}
-                  </p>
-                  <p>{order.shippingAddress?.country || "India"}</p>
-                </div>
+                <AddressBlock address={order.shippingAddress} />
               </SectionCard>
             </div>
           </div>
@@ -474,7 +493,7 @@ export default function OrderDetailsPage() {
                   <label className="mb-2 block text-sm font-medium text-black">
                     Order Status
                   </label>
-                  <select
+                  <Select
                     value={statusForm.orderStatus}
                     onChange={(e) =>
                       setStatusForm((prev) => ({
@@ -482,21 +501,20 @@ export default function OrderDetailsPage() {
                         orderStatus: e.target.value,
                       }))
                     }
-                    className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm text-black outline-none ring-1 ring-black/5 focus:ring-2 focus:ring-black/10"
                   >
                     {ORDER_STATUSES.map((status) => (
                       <option key={status} value={status}>
                         {status.replaceAll("_", " ")}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-black">
                     Admin Remarks
                   </label>
-                  <textarea
+                  <Textarea
                     rows={4}
                     value={statusForm.adminRemarks}
                     onChange={(e) =>
@@ -506,17 +524,12 @@ export default function OrderDetailsPage() {
                       }))
                     }
                     placeholder="Add remarks..."
-                    className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm text-black outline-none ring-1 ring-black/5 placeholder:text-black/35 focus:ring-2 focus:ring-black/10"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                >
+                <SubmitButton disabled={isSubmitting}>
                   {isSubmitting ? "Updating..." : "Update Status"}
-                </button>
+                </SubmitButton>
               </form>
             </SectionCard>
 
@@ -527,7 +540,7 @@ export default function OrderDetailsPage() {
                     <label className="mb-2 block text-sm font-medium text-black">
                       Method
                     </label>
-                    <select
+                    <Select
                       value={paymentForm.method}
                       onChange={(e) =>
                         setPaymentForm((prev) => ({
@@ -535,21 +548,20 @@ export default function OrderDetailsPage() {
                           method: e.target.value,
                         }))
                       }
-                      className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5"
                     >
                       {PAYMENT_METHODS.map((item) => (
                         <option key={item} value={item}>
                           {item.replaceAll("_", " ")}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-medium text-black">
                       Status
                     </label>
-                    <select
+                    <Select
                       value={paymentForm.status}
                       onChange={(e) =>
                         setPaymentForm((prev) => ({
@@ -557,36 +569,30 @@ export default function OrderDetailsPage() {
                           status: e.target.value,
                         }))
                       }
-                      className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5"
                     >
                       {PAYMENT_STATUSES.map((item) => (
                         <option key={item} value={item}>
                           {item.replaceAll("_", " ")}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-black">
-                    Amount Paid
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={paymentForm.amountPaid}
-                    onChange={(e) =>
-                      setPaymentForm((prev) => ({
-                        ...prev,
-                        amountPaid: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5"
-                  />
-                </div>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="Amount Paid"
+                  value={paymentForm.amountPaid}
+                  onChange={(e) =>
+                    setPaymentForm((prev) => ({
+                      ...prev,
+                      amountPaid: e.target.value,
+                    }))
+                  }
+                />
 
-                <input
+                <Input
                   type="text"
                   placeholder="Transaction ID"
                   value={paymentForm.transactionId}
@@ -596,10 +602,9 @@ export default function OrderDetailsPage() {
                       transactionId: e.target.value,
                     }))
                   }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
                 />
 
-                <input
+                <Input
                   type="text"
                   placeholder="Gateway"
                   value={paymentForm.gateway}
@@ -609,10 +614,9 @@ export default function OrderDetailsPage() {
                       gateway: e.target.value,
                     }))
                   }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
                 />
 
-                <input
+                <Input
                   type="text"
                   placeholder="Gateway Order ID"
                   value={paymentForm.gatewayOrderId}
@@ -622,10 +626,9 @@ export default function OrderDetailsPage() {
                       gatewayOrderId: e.target.value,
                     }))
                   }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
                 />
 
-                <input
+                <Input
                   type="text"
                   placeholder="Gateway Payment ID"
                   value={paymentForm.gatewayPaymentId}
@@ -635,10 +638,9 @@ export default function OrderDetailsPage() {
                       gatewayPaymentId: e.target.value,
                     }))
                   }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
                 />
 
-                <textarea
+                <Textarea
                   rows={3}
                   placeholder="Failure reason"
                   value={paymentForm.failureReason}
@@ -648,123 +650,140 @@ export default function OrderDetailsPage() {
                       failureReason: e.target.value,
                     }))
                   }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
                 />
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                >
+                <SubmitButton disabled={isSubmitting}>
                   {isSubmitting ? "Updating..." : "Update Payment"}
-                </button>
+                </SubmitButton>
               </form>
             </SectionCard>
 
-            <SectionCard title="Shipment Details" icon={Truck}>
-              <form onSubmit={handleShipmentSubmit} className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Courier Name"
-                  value={shipmentForm.courierName}
-                  onChange={(e) =>
-                    setShipmentForm((prev) => ({
-                      ...prev,
-                      courierName: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
-                />
+            {/* <ShiprocketTrackingSyncCard
+              order={order}
+              onSynced={(updatedOrder) => {
+                if (updatedOrder) setOrder(updatedOrder);
+              }}
+            /> */}
 
-                <input
-                  type="text"
-                  placeholder="AWB Number"
-                  value={shipmentForm.awbNumber}
-                  onChange={(e) =>
-                    setShipmentForm((prev) => ({
-                      ...prev,
-                      awbNumber: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
-                />
+         <SectionCard title="Shipment Details" icon={Truck}>
+  <form onSubmit={handleShipmentSubmit} className="space-y-4">
+    <div>
+      <label className="mb-2 block text-sm font-medium text-black">
+        Courier Name
+      </label>
+      <Input
+        type="text"
+        value={shipmentForm.courierName}
+        onChange={(e) =>
+          setShipmentForm((prev) => ({
+            ...prev,
+            courierName: e.target.value,
+          }))
+        }
+      />
+    </div>
 
-                <input
-                  type="text"
-                  placeholder="Tracking Number"
-                  value={shipmentForm.trackingNumber}
-                  onChange={(e) =>
-                    setShipmentForm((prev) => ({
-                      ...prev,
-                      trackingNumber: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
-                />
+    <div>
+      <label className="mb-2 block text-sm font-medium text-black">
+        AWB Number
+      </label>
+      <Input
+        type="text"
+        value={shipmentForm.awbNumber}
+        onChange={(e) =>
+          setShipmentForm((prev) => ({
+            ...prev,
+            awbNumber: e.target.value,
+          }))
+        }
+      />
+    </div>
 
-                <input
-                  type="text"
-                  placeholder="Tracking URL"
-                  value={shipmentForm.trackingUrl}
-                  onChange={(e) =>
-                    setShipmentForm((prev) => ({
-                      ...prev,
-                      trackingUrl: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
-                />
+    <div>
+      <label className="mb-2 block text-sm font-medium text-black">
+        Tracking Number
+      </label>
+      <Input
+        type="text"
+        value={shipmentForm.trackingNumber}
+        onChange={(e) =>
+          setShipmentForm((prev) => ({
+            ...prev,
+            trackingNumber: e.target.value,
+          }))
+        }
+      />
+    </div>
 
-                <input
-                  type="text"
-                  placeholder="Shipment Status"
-                  value={shipmentForm.status}
-                  onChange={(e) =>
-                    setShipmentForm((prev) => ({
-                      ...prev,
-                      status: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
-                />
+    <div>
+      <label className="mb-2 block text-sm font-medium text-black">
+        Tracking URL
+      </label>
+      <Input
+        type="text"
+        value={shipmentForm.trackingUrl}
+        onChange={(e) =>
+          setShipmentForm((prev) => ({
+            ...prev,
+            trackingUrl: e.target.value,
+          }))
+        }
+      />
+    </div>
 
-                <input
-                  type="text"
-                  placeholder="Label URL"
-                  value={shipmentForm.labelUrl}
-                  onChange={(e) =>
-                    setShipmentForm((prev) => ({
-                      ...prev,
-                      labelUrl: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
-                />
+    <div>
+      <label className="mb-2 block text-sm font-medium text-black">
+        Shipment Status
+      </label>
+      <Input
+        type="text"
+        value={shipmentForm.status}
+        onChange={(e) =>
+          setShipmentForm((prev) => ({
+            ...prev,
+            status: e.target.value,
+          }))
+        }
+      />
+    </div>
 
-                <input
-                  type="text"
-                  placeholder="Invoice URL"
-                  value={shipmentForm.invoiceUrl}
-                  onChange={(e) =>
-                    setShipmentForm((prev) => ({
-                      ...prev,
-                      invoiceUrl: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-2xl border-0 bg-black/[0.04] px-4 py-3 text-sm outline-none ring-1 ring-black/5 placeholder:text-black/35"
-                />
+    <div>
+      <label className="mb-2 block text-sm font-medium text-black">
+        Label URL
+      </label>
+      <Input
+        type="text"
+        value={shipmentForm.labelUrl}
+        onChange={(e) =>
+          setShipmentForm((prev) => ({
+            ...prev,
+            labelUrl: e.target.value,
+          }))
+        }
+      />
+    </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSubmitting ? "Updating..." : "Update Shipment"}
-                </button>
-              </form>
-            </SectionCard>
+    <div>
+      <label className="mb-2 block text-sm font-medium text-black">
+        Invoice URL
+      </label>
+      <Input
+        type="text"
+        value={shipmentForm.invoiceUrl}
+        onChange={(e) =>
+          setShipmentForm((prev) => ({
+            ...prev,
+            invoiceUrl: e.target.value,
+          }))
+        }
+      />
+    </div>
 
-      
+    <SubmitButton disabled={isSubmitting}>
+      {isSubmitting ? "Updating..." : "Update Shipment"}
+    </SubmitButton>
+  </form>
+</SectionCard>
           </div>
         </div>
       </div>

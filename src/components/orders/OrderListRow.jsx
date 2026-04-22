@@ -3,14 +3,20 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  CheckSquare,
   ChevronDown,
   ChevronUp,
   Eye,
   FileText,
+  Loader2,
   Package2,
+  RefreshCcw,
   Save,
+  Square,
+  Truck,
 } from "lucide-react";
 import { useAdminOrderStore } from "@/store/adminOrderStore";
+import { useAdminShiprocketStore } from "@/store/adminShiprocketStore";
 
 const ORDER_STATUS_OPTIONS = [
   "processing",
@@ -64,8 +70,31 @@ function InfoBlock({ label, value }) {
   );
 }
 
-export default function OrderListRow({ order }) {
+function SelectionButton({ checked, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-black/[0.04] text-black transition hover:bg-black/[0.07]"
+    >
+      {checked ? (
+        <CheckSquare className="h-4 w-4" />
+      ) : (
+        <Square className="h-4 w-4" />
+      )}
+    </button>
+  );
+}
+
+export default function OrderListRow({
+  order,
+  selectable = false,
+  selected = false,
+  onToggleSelect,
+}) {
   const { updateOrderStatus, isSubmitting } = useAdminOrderStore();
+  const { syncTracking, getOrderLoading, getOrderError, getOrderSuccess } =
+    useAdminShiprocketStore();
 
   const [expanded, setExpanded] = useState(false);
   const [orderStatus, setOrderStatus] = useState(
@@ -82,6 +111,16 @@ export default function OrderListRow({ order }) {
     );
   }, [order]);
 
+  const shipment = order?.shipment || {};
+  const shiprocket = shipment?.shiprocket || {};
+
+  const isTrackable =
+    shiprocket?.isBooked || shipment?.awbNumber || shiprocket?.shipmentId;
+
+  const syncLoading = getOrderLoading(order?._id);
+  const syncError = getOrderError(order?._id);
+  const syncSuccess = getOrderSuccess(order?._id);
+
   const handleUpdateStatus = async () => {
     if (!order?._id || !orderStatus || orderStatus === order?.orderStatus) return;
     try {
@@ -89,9 +128,31 @@ export default function OrderListRow({ order }) {
     } catch {}
   };
 
+  const handleSyncTracking = async () => {
+    if (!order?._id || !isTrackable) return;
+    try {
+      await syncTracking(order._id);
+    } catch {}
+  };
+
   return (
     <div className="border-b border-black/5 last:border-b-0">
-      <div className="grid grid-cols-1 gap-3 px-4 py-4 md:grid-cols-[1.15fr_1fr_.7fr_.8fr_.75fr_auto] md:items-center">
+      <div
+        className={`grid grid-cols-1 gap-3 px-4 py-4 ${
+          selectable
+            ? "md:grid-cols-[56px_1.1fr_1fr_.7fr_.8fr_.75fr_1fr_auto]"
+            : "md:grid-cols-[1.15fr_1fr_.7fr_.8fr_.75fr_1fr_auto]"
+        } md:items-center`}
+      >
+        {selectable ? (
+          <div>
+            <SelectionButton
+              checked={selected}
+              onClick={() => onToggleSelect?.(order?._id)}
+            />
+          </div>
+        ) : null}
+
         <div>
           <p className="text-sm font-semibold text-black">
             {order?.orderNumber || "—"}
@@ -130,6 +191,24 @@ export default function OrderListRow({ order }) {
           </p>
         </div>
 
+        <div>
+          {isTrackable ? (
+            <>
+              <p className="truncate text-sm font-medium text-black">
+                {shipment?.courierName || shiprocket?.courierCompanyName || "Booked"}
+              </p>
+              <p className="mt-1 truncate text-[11px] text-black/45">
+                AWB: {shipment?.awbNumber || "—"}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-black/60">Not booked</p>
+              <p className="mt-1 text-[11px] text-black/45">Shiprocket unavailable</p>
+            </>
+          )}
+        </div>
+
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -142,6 +221,20 @@ export default function OrderListRow({ order }) {
               <ChevronDown className="h-4 w-4" />
             )}
             {expanded ? "Hide" : "Details"}
+          </button>
+
+          <button
+            type="button"
+            disabled={!isTrackable || syncLoading}
+            onClick={handleSyncTracking}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-white px-3 text-xs font-medium text-black ring-1 ring-black/10 transition hover:bg-black/[0.03] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {syncLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCcw className="h-4 w-4" />
+            )}
+            Sync
           </button>
 
           <Link
@@ -197,7 +290,6 @@ export default function OrderListRow({ order }) {
 
                           <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-black/50">
                             <span>Code: {item?.productCode || "—"}</span>
-                    
                             <span>Qty: {item?.quantity || 0}</span>
                           </div>
 
@@ -234,6 +326,69 @@ export default function OrderListRow({ order }) {
                       label="Coupon"
                       value={order?.coupon?.code || order?.couponCode}
                     />
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-white p-3 ring-1 ring-black/5">
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-black/40">
+                    Shiprocket
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <InfoBlock
+                      label="Booked"
+                      value={shiprocket?.isBooked ? "Yes" : "No"}
+                    />
+                    <InfoBlock
+                      label="Courier"
+                      value={
+                        shipment?.courierName || shiprocket?.courierCompanyName
+                      }
+                    />
+                    <InfoBlock label="AWB" value={shipment?.awbNumber} />
+                    <InfoBlock label="Shipment ID" value={shiprocket?.shipmentId} />
+                    <InfoBlock
+                      label="SR Order ID"
+                      value={shiprocket?.shiprocketOrderId}
+                    />
+                    <InfoBlock
+                      label="Tracking Status"
+                      value={shipment?.status}
+                    />
+                  </div>
+
+                  {shiprocket?.lastError ? (
+                    <div className="mt-3 rounded-xl bg-red-50 px-3 py-3 text-sm text-red-600 ring-1 ring-red-100">
+                      {shiprocket.lastError}
+                    </div>
+                  ) : null}
+
+                  {syncError ? (
+                    <div className="mt-3 rounded-xl bg-red-50 px-3 py-3 text-sm text-red-600 ring-1 ring-red-100">
+                      {syncError}
+                    </div>
+                  ) : null}
+
+                  {syncSuccess ? (
+                    <div className="mt-3 rounded-xl bg-emerald-50 px-3 py-3 text-sm text-emerald-700 ring-1 ring-emerald-100">
+                      {syncSuccess}
+                    </div>
+                  ) : null}
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={!isTrackable || syncLoading}
+                      onClick={handleSyncTracking}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-black px-4 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {syncLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Truck className="h-4 w-4" />
+                      )}
+                      Sync Tracking
+                    </button>
                   </div>
                 </div>
 

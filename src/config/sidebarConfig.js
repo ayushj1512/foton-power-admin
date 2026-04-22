@@ -22,8 +22,7 @@ export const SIDEBAR_ITEMS = [
     icon: Package,
     children: [
       { label: "All Orders", href: "/orders/list" },
-         { label: "Invoices", href: "/orders/invoice" },
-
+      { label: "Invoices", href: "/orders/invoice" },
     ],
   },
 

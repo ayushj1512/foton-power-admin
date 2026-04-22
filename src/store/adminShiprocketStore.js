@@ -5,7 +5,7 @@ import { create } from "zustand";
 const API_BASE =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:9000";
 
-const buildUrl = (path) => `${API_BASE}${path}`;
+const buildUrl = (path = "") => `${API_BASE}${path}`;
 
 const parseJsonSafely = async (response) => {
   try {
@@ -15,85 +15,178 @@ const parseJsonSafely = async (response) => {
   }
 };
 
+const getStoredAdminToken = () => {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("adminToken") || "";
+};
+
 const getErrorMessage = (data, fallback = "Something went wrong") => {
-  return data?.message || data?.error || fallback;
+  return (
+    data?.message ||
+    data?.error?.message ||
+    data?.error ||
+    fallback
+  );
+};
+
+const getAuthHeaders = () => {
+  const token = getStoredAdminToken();
+
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 };
 
 export const useAdminShiprocketStore = create((set, get) => ({
   pickupLocations: [],
-  selectedCourier: null,
-  serviceability: null,
-  tracking: null,
-  bookingResult: null,
+  pickupLoading: false,
+  pickupError: "",
+
+  selectedCourierByOrder: {},
+  serviceabilityByOrder: {},
+  trackingByOrder: {},
+  bookingResultByOrder: {},
   cancelResult: null,
 
-  loading: false,
-  pickupLoading: false,
-  serviceabilityLoading: false,
-  bookingLoading: false,
-  trackingLoading: false,
-  cancelLoading: false,
+  loadingByOrder: {},
+  serviceabilityLoadingByOrder: {},
+  bookingLoadingByOrder: {},
+  trackingLoadingByOrder: {},
+  errorByOrder: {},
+  successByOrder: {},
 
+  loading: false,
+  cancelLoading: false,
   error: null,
 
   resetShiprocketState: () =>
     set({
-      selectedCourier: null,
-      serviceability: null,
-      tracking: null,
-      bookingResult: null,
+      pickupLocations: [],
+      pickupLoading: false,
+      pickupError: "",
+      selectedCourierByOrder: {},
+      serviceabilityByOrder: {},
+      trackingByOrder: {},
+      bookingResultByOrder: {},
       cancelResult: null,
+      loadingByOrder: {},
+      serviceabilityLoadingByOrder: {},
+      bookingLoadingByOrder: {},
+      trackingLoadingByOrder: {},
+      errorByOrder: {},
+      successByOrder: {},
+      loading: false,
+      cancelLoading: false,
       error: null,
     }),
 
   clearShiprocketError: () => set({ error: null }),
 
-  getAuthHeaders: () => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("adminToken")
-        : null;
+  clearOrderState: (orderId) => {
+    if (!orderId) return;
 
-    return {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+    set((state) => {
+      const nextSelectedCourier = { ...state.selectedCourierByOrder };
+      const nextServiceability = { ...state.serviceabilityByOrder };
+      const nextTracking = { ...state.trackingByOrder };
+      const nextBooking = { ...state.bookingResultByOrder };
+      const nextLoading = { ...state.loadingByOrder };
+      const nextServiceabilityLoading = {
+        ...state.serviceabilityLoadingByOrder,
+      };
+      const nextBookingLoading = { ...state.bookingLoadingByOrder };
+      const nextTrackingLoading = { ...state.trackingLoadingByOrder };
+      const nextError = { ...state.errorByOrder };
+      const nextSuccess = { ...state.successByOrder };
+
+      delete nextSelectedCourier[orderId];
+      delete nextServiceability[orderId];
+      delete nextTracking[orderId];
+      delete nextBooking[orderId];
+      delete nextLoading[orderId];
+      delete nextServiceabilityLoading[orderId];
+      delete nextBookingLoading[orderId];
+      delete nextTrackingLoading[orderId];
+      delete nextError[orderId];
+      delete nextSuccess[orderId];
+
+      return {
+        selectedCourierByOrder: nextSelectedCourier,
+        serviceabilityByOrder: nextServiceability,
+        trackingByOrder: nextTracking,
+        bookingResultByOrder: nextBooking,
+        loadingByOrder: nextLoading,
+        serviceabilityLoadingByOrder: nextServiceabilityLoading,
+        bookingLoadingByOrder: nextBookingLoading,
+        trackingLoadingByOrder: nextTrackingLoading,
+        errorByOrder: nextError,
+        successByOrder: nextSuccess,
+      };
+    });
   },
+
+  getOrderLoading: (orderId) => Boolean(get().loadingByOrder?.[orderId]),
+  getOrderError: (orderId) => get().errorByOrder?.[orderId] || "",
+  getOrderSuccess: (orderId) => get().successByOrder?.[orderId] || "",
+  getSelectedCourier: (orderId) =>
+    get().selectedCourierByOrder?.[orderId] || null,
+  getServiceability: (orderId) =>
+    get().serviceabilityByOrder?.[orderId] || null,
+  getTracking: (orderId) => get().trackingByOrder?.[orderId] || null,
+  getBookingResult: (orderId) =>
+    get().bookingResultByOrder?.[orderId] || null,
 
   fetchPickupLocations: async () => {
     set({
       pickupLoading: true,
       loading: true,
+      pickupError: "",
       error: null,
     });
 
     try {
       const response = await fetch(buildUrl("/api/shiprocket/pickup-locations"), {
         method: "GET",
-        headers: get().getAuthHeaders(),
+        headers: getAuthHeaders(),
+        cache: "no-store",
       });
 
       const data = await parseJsonSafely(response);
 
-      if (!response.ok) {
-        throw new Error(getErrorMessage(data, "Failed to fetch pickup locations"));
+      if (!response.ok || !data?.success) {
+        throw new Error(
+          getErrorMessage(data, "Failed to fetch pickup locations")
+        );
       }
 
+      const pickupLocations = Array.isArray(
+        data?.data?.data?.shipping_address
+      )
+        ? data.data.data.shipping_address
+        : Array.isArray(data?.data?.pickup_locations)
+        ? data.data.pickup_locations
+        : Array.isArray(data?.data)
+        ? data.data
+        : [];
+
       set({
-        pickupLocations:
-          data?.data?.data ||
-          data?.data?.pickup_locations ||
-          data?.data ||
-          [],
+        pickupLocations,
         pickupLoading: false,
         loading: false,
+        pickupError: "",
       });
 
-      return data;
+      return {
+        success: true,
+        data,
+        pickupLocations,
+      };
     } catch (error) {
       set({
         pickupLoading: false,
         loading: false,
+        pickupError: error.message || "Failed to fetch pickup locations",
         error: error.message || "Failed to fetch pickup locations",
       });
       throw error;
@@ -101,166 +194,392 @@ export const useAdminShiprocketStore = create((set, get) => ({
   },
 
   checkServiceability: async (orderId, payload = {}) => {
-    set({
-      serviceabilityLoading: true,
+    if (!orderId) {
+      throw new Error("orderId is required");
+    }
+
+    set((state) => ({
       loading: true,
       error: null,
-      serviceability: null,
-      selectedCourier: null,
-    });
+      loadingByOrder: {
+        ...state.loadingByOrder,
+        [orderId]: true,
+      },
+      serviceabilityLoadingByOrder: {
+        ...state.serviceabilityLoadingByOrder,
+        [orderId]: true,
+      },
+      errorByOrder: {
+        ...state.errorByOrder,
+        [orderId]: "",
+      },
+      successByOrder: {
+        ...state.successByOrder,
+        [orderId]: "",
+      },
+    }));
 
     try {
       const response = await fetch(
         buildUrl(`/api/shiprocket/orders/${orderId}/serviceability`),
         {
           method: "POST",
-          headers: get().getAuthHeaders(),
+          headers: getAuthHeaders(),
           body: JSON.stringify(payload),
         }
       );
 
       const data = await parseJsonSafely(response);
 
-      if (!response.ok) {
-        throw new Error(getErrorMessage(data, "Failed to check serviceability"));
+      if (!response.ok || !data?.success) {
+        throw new Error(
+          getErrorMessage(data, "Failed to check serviceability")
+        );
       }
 
-      set({
-        serviceability: data?.data || null,
-        selectedCourier: data?.recommendedCourier || null,
-        serviceabilityLoading: false,
+      set((state) => ({
+        serviceabilityByOrder: {
+          ...state.serviceabilityByOrder,
+          [orderId]: data?.data || null,
+        },
+        selectedCourierByOrder: {
+          ...state.selectedCourierByOrder,
+          [orderId]: data?.recommendedCourier || null,
+        },
         loading: false,
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        serviceabilityLoadingByOrder: {
+          ...state.serviceabilityLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: "",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "Serviceability checked successfully",
+        },
+      }));
 
       return data;
     } catch (error) {
-      set({
-        serviceabilityLoading: false,
+      set((state) => ({
         loading: false,
         error: error.message || "Failed to check serviceability",
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        serviceabilityLoadingByOrder: {
+          ...state.serviceabilityLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: error.message || "Failed to check serviceability",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "",
+        },
+      }));
       throw error;
     }
   },
 
   autoBookOrder: async (orderId, payload = {}) => {
-    set({
-      bookingLoading: true,
+    if (!orderId) {
+      throw new Error("orderId is required");
+    }
+
+    set((state) => ({
       loading: true,
       error: null,
-      bookingResult: null,
-    });
+      loadingByOrder: {
+        ...state.loadingByOrder,
+        [orderId]: true,
+      },
+      bookingLoadingByOrder: {
+        ...state.bookingLoadingByOrder,
+        [orderId]: true,
+      },
+      errorByOrder: {
+        ...state.errorByOrder,
+        [orderId]: "",
+      },
+      successByOrder: {
+        ...state.successByOrder,
+        [orderId]: "",
+      },
+    }));
 
     try {
       const response = await fetch(
         buildUrl(`/api/shiprocket/orders/${orderId}/auto-book`),
         {
           method: "POST",
-          headers: get().getAuthHeaders(),
+          headers: getAuthHeaders(),
           body: JSON.stringify(payload),
         }
       );
 
       const data = await parseJsonSafely(response);
 
-      if (!response.ok) {
-        throw new Error(getErrorMessage(data, "Failed to auto book shipment"));
+      if (!response.ok || !data?.success) {
+        throw new Error(
+          getErrorMessage(data, "Failed to auto book shipment")
+        );
       }
 
-      set({
-        bookingResult: data,
-        tracking: data?.shiprocket?.tracking || null,
-        bookingLoading: false,
+      set((state) => ({
+        bookingResultByOrder: {
+          ...state.bookingResultByOrder,
+          [orderId]: data,
+        },
+        trackingByOrder: {
+          ...state.trackingByOrder,
+          [orderId]: data?.tracking || data?.shiprocket?.tracking || null,
+        },
         loading: false,
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        bookingLoadingByOrder: {
+          ...state.bookingLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: "",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "Order booked successfully",
+        },
+      }));
 
       return data;
     } catch (error) {
-      set({
-        bookingLoading: false,
+      set((state) => ({
         loading: false,
         error: error.message || "Failed to auto book shipment",
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        bookingLoadingByOrder: {
+          ...state.bookingLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: error.message || "Failed to auto book shipment",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "",
+        },
+      }));
       throw error;
     }
   },
 
   manualBookOrder: async (orderId, payload = {}) => {
-    set({
-      bookingLoading: true,
+    if (!orderId) {
+      throw new Error("orderId is required");
+    }
+
+    set((state) => ({
       loading: true,
       error: null,
-      bookingResult: null,
-    });
+      loadingByOrder: {
+        ...state.loadingByOrder,
+        [orderId]: true,
+      },
+      bookingLoadingByOrder: {
+        ...state.bookingLoadingByOrder,
+        [orderId]: true,
+      },
+      errorByOrder: {
+        ...state.errorByOrder,
+        [orderId]: "",
+      },
+      successByOrder: {
+        ...state.successByOrder,
+        [orderId]: "",
+      },
+    }));
 
     try {
       const response = await fetch(
         buildUrl(`/api/shiprocket/orders/${orderId}/manual-book`),
         {
           method: "POST",
-          headers: get().getAuthHeaders(),
+          headers: getAuthHeaders(),
           body: JSON.stringify(payload),
         }
       );
 
       const data = await parseJsonSafely(response);
 
-      if (!response.ok) {
-        throw new Error(getErrorMessage(data, "Failed to manually book shipment"));
+      if (!response.ok || !data?.success) {
+        throw new Error(
+          getErrorMessage(data, "Failed to manually book shipment")
+        );
       }
 
-      set({
-        bookingResult: data,
-        bookingLoading: false,
+      set((state) => ({
+        bookingResultByOrder: {
+          ...state.bookingResultByOrder,
+          [orderId]: data,
+        },
         loading: false,
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        bookingLoadingByOrder: {
+          ...state.bookingLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: "",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "Manual booking completed successfully",
+        },
+      }));
 
       return data;
     } catch (error) {
-      set({
-        bookingLoading: false,
+      set((state) => ({
         loading: false,
         error: error.message || "Failed to manually book shipment",
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        bookingLoadingByOrder: {
+          ...state.bookingLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: error.message || "Failed to manually book shipment",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "",
+        },
+      }));
       throw error;
     }
   },
 
   syncTracking: async (orderId) => {
-    set({
-      trackingLoading: true,
+    if (!orderId) {
+      throw new Error("orderId is required");
+    }
+
+    set((state) => ({
       loading: true,
       error: null,
-    });
+      loadingByOrder: {
+        ...state.loadingByOrder,
+        [orderId]: true,
+      },
+      trackingLoadingByOrder: {
+        ...state.trackingLoadingByOrder,
+        [orderId]: true,
+      },
+      errorByOrder: {
+        ...state.errorByOrder,
+        [orderId]: "",
+      },
+      successByOrder: {
+        ...state.successByOrder,
+        [orderId]: "",
+      },
+    }));
 
     try {
       const response = await fetch(
         buildUrl(`/api/shiprocket/orders/${orderId}/sync-tracking`),
         {
           method: "POST",
-          headers: get().getAuthHeaders(),
+          headers: getAuthHeaders(),
         }
       );
 
       const data = await parseJsonSafely(response);
 
-      if (!response.ok) {
+      if (!response.ok || !data?.success) {
         throw new Error(getErrorMessage(data, "Failed to sync tracking"));
       }
 
-      set({
-        tracking: data?.tracking || data,
-        trackingLoading: false,
+      set((state) => ({
+        trackingByOrder: {
+          ...state.trackingByOrder,
+          [orderId]: data?.tracking || data,
+        },
+        bookingResultByOrder: {
+          ...state.bookingResultByOrder,
+          [orderId]:
+            data?.order
+              ? {
+                  ...(state.bookingResultByOrder?.[orderId] || {}),
+                  order: data.order,
+                }
+              : state.bookingResultByOrder?.[orderId] || null,
+        },
         loading: false,
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        trackingLoadingByOrder: {
+          ...state.trackingLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: "",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "Tracking synced successfully",
+        },
+      }));
 
       return data;
     } catch (error) {
-      set({
-        trackingLoading: false,
+      set((state) => ({
         loading: false,
         error: error.message || "Failed to sync tracking",
-      });
+        loadingByOrder: {
+          ...state.loadingByOrder,
+          [orderId]: false,
+        },
+        trackingLoadingByOrder: {
+          ...state.trackingLoadingByOrder,
+          [orderId]: false,
+        },
+        errorByOrder: {
+          ...state.errorByOrder,
+          [orderId]: error.message || "Failed to sync tracking",
+        },
+        successByOrder: {
+          ...state.successByOrder,
+          [orderId]: "",
+        },
+      }));
       throw error;
     }
   },
@@ -276,13 +595,13 @@ export const useAdminShiprocketStore = create((set, get) => ({
     try {
       const response = await fetch(buildUrl("/api/shiprocket/cancel"), {
         method: "POST",
-        headers: get().getAuthHeaders(),
+        headers: getAuthHeaders(),
         body: JSON.stringify({ ids }),
       });
 
       const data = await parseJsonSafely(response);
 
-      if (!response.ok) {
+      if (!response.ok || !data?.success) {
         throw new Error(getErrorMessage(data, "Failed to cancel shipment"));
       }
 

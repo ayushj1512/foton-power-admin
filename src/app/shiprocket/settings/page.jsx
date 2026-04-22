@@ -1,113 +1,170 @@
 "use client";
 
-import { useState } from "react";
-import { Save, Settings2 } from "lucide-react";
+import { useEffect } from "react";
+import {
+  Loader2,
+  MapPin,
+  Settings2,
+  Warehouse,
+} from "lucide-react";
+import { useAdminOrderStore } from "@/store/adminOrderStore";
+import { useAdminShiprocketStore } from "@/store/adminShiprocketStore";
+
+function StatCard({ label, value, icon: Icon }) {
+  return (
+    <div className="rounded-[24px] bg-white p-4 shadow-sm ring-1 ring-zinc-100">
+      <div className="mb-2 flex items-center gap-2 text-zinc-500">
+        <Icon size={16} />
+        <span className="text-xs font-semibold uppercase tracking-[0.16em]">
+          {label}
+        </span>
+      </div>
+      <div className="text-lg font-semibold text-zinc-950">{value}</div>
+    </div>
+  );
+}
 
 export default function ShiprocketSettingsPage() {
-  const [pickupLocation, setPickupLocation] = useState("Primary");
-  const [pickupPincode, setPickupPincode] = useState("");
-  const [weight, setWeight] = useState("0.5");
-  const [length, setLength] = useState("10");
-  const [breadth, setBreadth] = useState("10");
-  const [height, setHeight] = useState("10");
-  const [strategy, setStrategy] = useState("cheapest");
-  const [autoBook, setAutoBook] = useState(false);
+  const orders = useAdminOrderStore((state) => state.orders);
+  const fetchOrders = useAdminOrderStore((state) => state.fetchOrders);
+
+  const pickupLocations = useAdminShiprocketStore((state) => state.pickupLocations);
+  const pickupLoading = useAdminShiprocketStore((state) => state.pickupLoading);
+  const pickupError = useAdminShiprocketStore((state) => state.pickupError);
+  const fetchPickupLocations = useAdminShiprocketStore((state) => state.fetchPickupLocations);
+
+  useEffect(() => {
+    fetchPickupLocations().catch(() => {});
+    fetchOrders({
+      page: 1,
+      limit: 25,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    }).catch(() => {});
+  }, [fetchPickupLocations, fetchOrders]);
+
+  const primaryLocation =
+    pickupLocations.find((item) => item?.is_primary_location) || null;
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-        <p className="text-sm font-medium text-neutral-500">Configuration</p>
-        <h1 className="mt-1 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-          Shiprocket Settings
-        </h1>
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-          Keep your default pickup and package values here for faster booking flows.
-        </p>
-      </div>
+    <div className="min-h-screen bg-zinc-50 px-4 py-5 sm:px-6 lg:px-8">
+      <div className="space-y-5">
+        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-zinc-100 sm:p-6">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            Shiprocket
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">
+            Settings
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            Pickup locations and default operational references.
+          </p>
+        </div>
 
-      <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <input
-            value={pickupLocation}
-            onChange={(e) => setPickupLocation(e.target.value)}
-            placeholder="Default Pickup Location"
-            className="rounded-2xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-500 dark:border-neutral-700"
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Pickup locations"
+            value={pickupLocations.length}
+            icon={Warehouse}
           />
-          <input
-            value={pickupPincode}
-            onChange={(e) => setPickupPincode(e.target.value)}
-            placeholder="Default Pickup Pincode"
-            className="rounded-2xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-500 dark:border-neutral-700"
+          <StatCard
+            label="Primary location"
+            value={primaryLocation?.pickup_location || "Not found"}
+            icon={MapPin}
           />
-          <select
-            value={strategy}
-            onChange={(e) => setStrategy(e.target.value)}
-            className="rounded-2xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none focus:border-neutral-500 dark:border-neutral-700"
-          >
-            <option value="cheapest">Cheapest</option>
-            <option value="fastest">Fastest</option>
-          </select>
-
-          <input
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="Default Weight"
-            className="rounded-2xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-500 dark:border-neutral-700"
-          />
-          <input
-            value={length}
-            onChange={(e) => setLength(e.target.value)}
-            placeholder="Default Length"
-            className="rounded-2xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-500 dark:border-neutral-700"
-          />
-          <input
-            value={breadth}
-            onChange={(e) => setBreadth(e.target.value)}
-            placeholder="Default Breadth"
-            className="rounded-2xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-500 dark:border-neutral-700"
-          />
-          <input
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            placeholder="Default Height"
-            className="rounded-2xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-500 dark:border-neutral-700"
+          <StatCard
+            label="Recent orders loaded"
+            value={Array.isArray(orders) ? orders.length : 0}
+            icon={Settings2}
           />
         </div>
 
-        <div className="mt-5 flex items-center justify-between rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800">
-          <div>
-            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-              Auto booking
-            </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Use saved defaults for quick booking flow.
-            </p>
+        <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-zinc-100 sm:p-6">
+            <h2 className="text-lg font-semibold text-zinc-950">
+              Recommended defaults
+            </h2>
+
+            <div className="mt-4 space-y-3">
+              <div className="rounded-2xl bg-zinc-50 px-4 py-4 ring-1 ring-zinc-100">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                  Pickup location
+                </div>
+                <div className="mt-1 text-sm font-medium text-zinc-950">
+                  {primaryLocation?.pickup_location || "Akshat"}
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-zinc-50 px-4 py-4 ring-1 ring-zinc-100">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                  Pickup pincode
+                </div>
+                <div className="mt-1 text-sm font-medium text-zinc-950">
+                  {primaryLocation?.pin_code || "110034"}
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-zinc-50 px-4 py-4 ring-1 ring-zinc-100">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                  Default package
+                </div>
+                <div className="mt-1 text-sm font-medium text-zinc-950">
+                  10 × 10 × 10, 0.5 kg
+                </div>
+              </div>
+            </div>
           </div>
 
-          <button
-            onClick={() => setAutoBook((prev) => !prev)}
-            className={`relative h-7 w-12 rounded-full transition ${
-              autoBook ? "bg-neutral-900 dark:bg-white" : "bg-neutral-300 dark:bg-neutral-700"
-            }`}
-          >
-            <span
-              className={`absolute top-1 h-5 w-5 rounded-full bg-white transition dark:bg-neutral-950 ${
-                autoBook ? "left-6" : "left-1"
-              }`}
-            />
-          </button>
-        </div>
+          <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-zinc-100 sm:p-6">
+            <h2 className="text-lg font-semibold text-zinc-950">
+              Pickup locations
+            </h2>
 
-        <div className="mt-5 flex flex-wrap gap-3">
-          <button className="inline-flex items-center gap-2 rounded-2xl bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 dark:bg-white dark:text-neutral-900">
-            <Save className="h-4 w-4" />
-            Save Settings
-          </button>
+            {pickupLoading ? (
+              <div className="mt-4 flex items-center gap-2 rounded-2xl bg-zinc-50 px-4 py-5 text-sm text-zinc-500 ring-1 ring-zinc-100">
+                <Loader2 size={16} className="animate-spin" />
+                Loading pickup locations...
+              </div>
+            ) : pickupError ? (
+              <div className="mt-4 rounded-2xl bg-red-50 px-4 py-4 text-sm text-red-700 ring-1 ring-red-100">
+                {pickupError}
+              </div>
+            ) : pickupLocations.length ? (
+              <div className="mt-4 space-y-3">
+                {pickupLocations.map((location) => (
+                  <div
+                    key={location?.id || location?.pickup_location}
+                    className="rounded-2xl bg-zinc-50 px-4 py-4 ring-1 ring-zinc-100"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-zinc-950">
+                          {location?.pickup_location || "Pickup location"}
+                        </div>
+                        <div className="mt-1 text-xs text-zinc-500">
+                          {location?.name || "—"} • {location?.phone || "—"}
+                        </div>
+                      </div>
 
-          <button className="inline-flex items-center gap-2 rounded-2xl border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-800 transition hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-900">
-            <Settings2 className="h-4 w-4" />
-            Reset Defaults
-          </button>
+                      {location?.is_primary_location ? (
+                        <span className="rounded-full bg-zinc-950 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                          Primary
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <p className="mt-3 text-sm text-zinc-600">
+                      {location?.address || "No address available"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-4 rounded-2xl bg-zinc-50 px-4 py-8 text-center text-sm text-zinc-500 ring-1 ring-zinc-100">
+                No pickup locations found.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
