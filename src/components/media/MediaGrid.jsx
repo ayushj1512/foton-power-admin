@@ -6,6 +6,7 @@ import {
   Check,
   Copy,
   ExternalLink,
+  Eye,
   ImageIcon,
   Trash2,
   Video,
@@ -56,7 +57,7 @@ function MediaSkeleton() {
       {Array.from({ length: 18 }).map((_, index) => (
         <div
           key={index}
-          className="aspect-square overflow-hidden rounded-2xl bg-gray-100 animate-pulse"
+          className="aspect-square animate-pulse overflow-hidden rounded-2xl bg-gray-100"
         />
       ))}
     </div>
@@ -110,7 +111,10 @@ function Lightbox({ items = [], activeIndex = 0, onClose, onPrev, onNext }) {
             <>
               <button
                 type="button"
-                onClick={onPrev}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPrev?.();
+                }}
                 className="absolute left-2 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20 sm:left-4"
               >
                 <ChevronLeft size={20} />
@@ -118,7 +122,10 @@ function Lightbox({ items = [], activeIndex = 0, onClose, onPrev, onNext }) {
 
               <button
                 type="button"
-                onClick={onNext}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNext?.();
+                }}
                 className="absolute right-2 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20 sm:right-4"
               >
                 <ChevronRight size={20} />
@@ -175,44 +182,25 @@ export default function MediaGrid({
 
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
-  if (loading) {
-    return <MediaSkeleton />;
-  }
+  if (loading) return <MediaSkeleton />;
+  if (!Array.isArray(items) || items.length === 0) return null;
 
-  if (!Array.isArray(items) || items.length === 0) {
-    return null;
-  }
-
-  const openLightbox = (index) => {
-    setLightboxIndex(index);
-  };
-
-  const closeLightbox = () => {
-    setLightboxIndex(-1);
-  };
+  const closeLightbox = () => setLightboxIndex(-1);
 
   const showPrev = () => {
-    setLightboxIndex((prev) => {
-      if (prev <= 0) return items.length - 1;
-      return prev - 1;
-    });
+    setLightboxIndex((prev) => (prev <= 0 ? items.length - 1 : prev - 1));
   };
 
   const showNext = () => {
-    setLightboxIndex((prev) => {
-      if (prev >= items.length - 1) return 0;
-      return prev + 1;
-    });
+    setLightboxIndex((prev) => (prev >= items.length - 1 ? 0 : prev + 1));
   };
 
   const handleCopy = async (e, item) => {
+    e.preventDefault();
     e.stopPropagation();
 
     const src = getSrc(item);
-    if (!src) {
-      toast.error("No media link found");
-      return;
-    }
+    if (!src) return toast.error("No media link found");
 
     try {
       await navigator.clipboard.writeText(src);
@@ -223,31 +211,28 @@ export default function MediaGrid({
   };
 
   const handleOpenNewTab = (e, item) => {
+    e.preventDefault();
     e.stopPropagation();
 
     const src = getSrc(item);
-    if (!src) {
-      toast.error("No media link found");
-      return;
-    }
+    if (!src) return toast.error("No media link found");
 
     window.open(src, "_blank", "noopener,noreferrer");
   };
 
   const handleDelete = async (e, item) => {
+    e.preventDefault();
     e.stopPropagation();
 
     const publicId = item?.publicId || item?.public_id;
     const resourceType = getResourceType(item);
 
-    if (!publicId) {
-      toast.error("publicId not found");
-      return;
-    }
+    if (!publicId) return toast.error("publicId not found");
 
     const confirmed = window.confirm(
       `Delete "${getName(item)}" from media library?`
     );
+
     if (!confirmed) return;
 
     await deleteMedia?.({ publicId, resourceType });
@@ -267,32 +252,37 @@ export default function MediaGrid({
           return (
             <div
               key={id}
-              className={`group relative aspect-square overflow-hidden rounded-2xl bg-gray-100 transition duration-200 ${
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelect?.(item);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onSelect?.(item);
+                }
+              }}
+              className={`group relative aspect-square cursor-pointer overflow-hidden rounded-2xl bg-gray-100 transition duration-200 ${
                 isSelected
                   ? "ring-2 ring-black shadow-[0_10px_30px_rgba(0,0,0,0.10)]"
                   : "hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.08)]"
               }`}
             >
-              <button
-                type="button"
-                onClick={() => openLightbox(index)}
-                className="absolute inset-0 z-[1]"
-                aria-label={`Open ${name}`}
-              >
-                <span className="sr-only">Open media</span>
-              </button>
-
               {src ? (
                 isVideo ? (
                   <>
                     <video
                       src={src}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      className="pointer-events-none h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       muted
                       playsInline
                       preload="metadata"
                     />
-                    <div className="absolute left-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/75 text-white backdrop-blur">
+                    <div className="pointer-events-none absolute left-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/75 text-white backdrop-blur">
                       <Video className="h-4 w-4" />
                     </div>
                   </>
@@ -303,19 +293,25 @@ export default function MediaGrid({
                     fill
                     unoptimized
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1280px) 25vw, 18vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    className="pointer-events-none object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                   />
                 )
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-gray-400">
+                <div className="pointer-events-none flex h-full w-full items-center justify-center text-gray-400">
                   <ImageIcon className="h-7 w-7" />
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-black/0 transition group-hover:bg-black/5" />
+              <div className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/5" />
 
               {isSelected && (
-                <div className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black text-white shadow-lg">
+                <div className="pointer-events-none absolute right-3 top-3 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-black text-white shadow-lg">
+                  <Check className="h-4 w-4" />
+                </div>
+              )}
+
+              {!isSelected && (
+                <div className="pointer-events-none absolute right-3 top-3 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-zinc-700 opacity-0 shadow-sm transition group-hover:opacity-100">
                   <Check className="h-4 w-4" />
                 </div>
               )}
@@ -327,7 +323,24 @@ export default function MediaGrid({
               </div>
 
               {showActions && (
-                <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2">
+                <div
+                  className="absolute bottom-3 right-3 z-40 flex items-center gap-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <IconActionButton
+                    title="Preview"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setLightboxIndex(index);
+                    }}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </IconActionButton>
+
                   <IconActionButton
                     title="Copy media link"
                     onClick={(e) => handleCopy(e, item)}
@@ -353,17 +366,6 @@ export default function MediaGrid({
                   </IconActionButton>
                 </div>
               )}
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect?.(item);
-                }}
-                className="absolute inset-0 z-[2] hidden"
-              >
-                Select media
-              </button>
             </div>
           );
         })}

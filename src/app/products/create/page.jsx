@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Palette, Trash2 } from "lucide-react";
+import { ImagePlus, Palette } from "lucide-react";
 import { useAdminProductStore } from "@/store/adminProductStore";
 import MediaPickerModal from "@/components/media/MediaPickerModal";
+import SortableProductMedia from "@/components/media/SortableProductMedia";
 import CategorySubcategoryDropdown from "@/components/common/CategorySubcategoryDropdown";
 import CollectionDropdown from "@/components/collections/CollectionDropdown";
 
@@ -70,6 +71,22 @@ function Field({ title, children, optional = false }) {
   );
 }
 
+function normalizeMediaItem(item = {}) {
+  return {
+    _id: item?._id || "",
+    publicId: item?.publicId || item?.public_id || "",
+    secureUrl: item?.secureUrl || item?.secure_url || item?.url || "",
+    url: item?.url || item?.secureUrl || item?.secure_url || "",
+    originalName:
+      item?.originalName || item?.original_filename || item?.name || "",
+    resourceType: item?.resourceType || item?.resource_type || "image",
+  };
+}
+
+function getMediaKey(item = {}) {
+  return item.publicId || item._id || item.secureUrl || item.url;
+}
+
 export default function CreateProductPage() {
   const router = useRouter();
   const { createProduct, isSubmitting, error, message } = useAdminProductStore();
@@ -89,19 +106,37 @@ export default function CreateProductPage() {
   const handleMediaSelect = (items) => {
     const picked = Array.isArray(items) ? items : items ? [items] : [];
 
-    setForm((prev) => ({
-      ...prev,
-      media: picked.map((item) => ({
-        _id: item?._id || "",
-        publicId: item?.publicId || "",
-        secureUrl: item?.secureUrl || item?.url || "",
-        url: item?.url || item?.secureUrl || "",
-        originalName: item?.originalName || "",
-        resourceType: item?.resourceType || "image",
-      })),
-    }));
+    const normalizedPicked = picked.map(normalizeMediaItem).filter((item) => {
+      const src = item.secureUrl || item.url;
+      return Boolean(src);
+    });
+
+    setForm((prev) => {
+      const existing = Array.isArray(prev.media) ? prev.media : [];
+      const merged = [...existing, ...normalizedPicked];
+
+      const seen = new Set();
+      const uniqueMedia = merged.filter((item) => {
+        const key = getMediaKey(item);
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      return {
+        ...prev,
+        media: uniqueMedia,
+      };
+    });
 
     setMediaOpen(false);
+  };
+
+  const handleReorderMedia = (nextMedia) => {
+    setForm((prev) => ({
+      ...prev,
+      media: nextMedia,
+    }));
   };
 
   const removeMedia = (index) => {
@@ -149,7 +184,7 @@ export default function CreateProductPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-zinc-900">Create Product</h1>
           <p className="text-sm text-zinc-500">
-            Add media and product details below.
+            Add multiple product images and product details below.
           </p>
         </div>
 
@@ -160,7 +195,7 @@ export default function CreateProductPage() {
                 Product Media
               </h2>
               <p className="text-xs text-zinc-500">
-                Upload or select product images/videos.
+                Select multiple images/videos. Drag cards to reorder.
               </p>
             </div>
 
@@ -170,46 +205,16 @@ export default function CreateProductPage() {
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
             >
               <ImagePlus size={16} />
-              {selectedMedia.length ? "Update Media" : "Upload Media"}
+              {selectedMedia.length ? "Add More Media" : "Upload Media"}
             </button>
           </div>
 
           {selectedMedia.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {selectedMedia.map((item, index) => {
-                const src = item?.secureUrl || item?.url;
-
-                return (
-                  <div
-                    key={`${item?.publicId || item?._id || "media"}-${index}`}
-                    className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200"
-                  >
-                    {item?.resourceType === "video" ? (
-                      <video
-                        src={src}
-                        className="h-36 w-full object-cover"
-                        controls
-                        playsInline
-                      />
-                    ) : (
-                      <img
-                        src={src}
-                        alt={item?.originalName || `media-${index}`}
-                        className="h-36 w-full object-cover"
-                      />
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => removeMedia(index)}
-                      className="absolute right-2 top-2 rounded-full bg-white p-2 text-zinc-700 shadow-sm ring-1 ring-zinc-200"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+            <SortableProductMedia
+              media={selectedMedia}
+              onReorder={handleReorderMedia}
+              onRemove={removeMedia}
+            />
           ) : (
             <button
               type="button"
@@ -433,7 +438,7 @@ export default function CreateProductPage() {
         onClose={() => setMediaOpen(false)}
         onSelect={handleMediaSelect}
         multiple
-        folder="miray/products"
+        folder="foton/products"
       />
     </div>
   );
