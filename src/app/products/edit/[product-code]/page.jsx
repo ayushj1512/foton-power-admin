@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { useAdminProductStore } from "@/store/adminProductStore";
 import { useAdminCategoryStore } from "@/store/adminCategoryStore";
 import { useAdminCollectionStore } from "@/store/adminCollectionStore";
+import ProductMediaManager from "@/components/products/ProductMediaManager";
 
 const input =
   "w-full rounded-2xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-black/30";
@@ -184,6 +185,12 @@ export default function EditProductPage() {
             {error}
           </div>
         )}
+
+        <ProductMediaManager
+  value={form.media}
+  onChange={(media) => handleChange("media", media)}
+  folder="foton/products"
+/>
 
         <form
           onSubmit={handleSubmit}
