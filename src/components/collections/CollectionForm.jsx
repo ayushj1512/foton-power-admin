@@ -13,8 +13,12 @@ import {
   Sparkles,
   Hash,
   FileText,
+  X,
+  ImagePlus,
 } from "lucide-react";
-import CollectionProductCodes from "./CollectionProductCodes";
+
+import ProductSelector from "@/components/products/ProductSelector";
+import MediaPickerModal from "@/components/media/MediaPickerModal";
 
 const keywordsToString = (keywords = []) =>
   Array.isArray(keywords) ? keywords.filter(Boolean).join(", ") : "";
@@ -32,6 +36,21 @@ const slugify = (value = "") =>
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+const getMediaUrl = (media) => {
+  if (!media) return "";
+  if (typeof media === "string") return media;
+  return media.secureUrl || media.url || "";
+};
+
+const normalizeMedia = (media) => {
+  if (!media) return "";
+  return {
+    url: media.secureUrl || media.url,
+    secureUrl: media.secureUrl || media.url,
+    publicId: media.publicId,
+  };
+};
 
 const inputClass =
   "w-full rounded-2xl bg-[#f7f7f8] px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:bg-white focus:shadow-[0_0_0_1px_rgba(24,24,27,0.14),0_8px_30px_rgba(0,0,0,0.05)]";
@@ -69,13 +88,77 @@ function FieldLabel({ children, hint }) {
   );
 }
 
+function MediaSelectBox({ label, value, onSelect, onRemove }) {
+  const [open, setOpen] = useState(false);
+  const url = getMediaUrl(value);
+
+  return (
+    <div className="space-y-2">
+      <FieldLabel>{label}</FieldLabel>
+
+      <div className="rounded-3xl bg-[#f7f7f8] p-3">
+        {url ? (
+          <div className="relative overflow-hidden rounded-2xl bg-white">
+            <img
+              src={url}
+              alt={label}
+              className="aspect-[4/3] w-full object-cover"
+            />
+
+            <button
+              type="button"
+              onClick={onRemove}
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-zinc-800 shadow-sm transition hover:bg-white"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="flex aspect-[4/3] w-full flex-col items-center justify-center rounded-2xl bg-white text-zinc-500 transition hover:bg-zinc-100"
+          >
+            <ImagePlus size={26} />
+            <span className="mt-2 text-sm font-medium">Select image</span>
+          </button>
+        )}
+
+        {url ? (
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-xs text-zinc-500">{url}</p>
+
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="shrink-0 rounded-full bg-black px-4 py-2 text-xs font-medium text-white transition hover:opacity-85"
+            >
+              Change
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      <MediaPickerModal
+        open={open}
+        onClose={() => setOpen(false)}
+        onSelect={(media) => {
+          onSelect(normalizeMedia(media));
+          setOpen(false);
+        }}
+        folder="foton/collections"
+        resourceType="image"
+      />
+    </div>
+  );
+}
+
 function ToggleCard({ icon: Icon, title, text, checked, onChange }) {
   return (
     <label className="group flex cursor-pointer items-center gap-3 rounded-2xl bg-[#f7f7f8] px-4 py-3.5 transition hover:bg-[#f2f2f3]">
       <div
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition ${
-          checked ? "bg-black text-white" : "bg-white text-zinc-600"
-        }`}
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition ${checked ? "bg-black text-white" : "bg-white text-zinc-600"
+          }`}
       >
         <Icon size={17} />
       </div>
@@ -86,14 +169,12 @@ function ToggleCard({ icon: Icon, title, text, checked, onChange }) {
       </div>
 
       <div
-        className={`relative h-7 w-12 rounded-full transition ${
-          checked ? "bg-black" : "bg-zinc-300"
-        }`}
+        className={`relative h-7 w-12 rounded-full transition ${checked ? "bg-black" : "bg-zinc-300"
+          }`}
       >
         <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
-            checked ? "left-6" : "left-1"
-          }`}
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${checked ? "left-6" : "left-1"
+            }`}
         />
       </div>
 
@@ -118,7 +199,6 @@ export default function CollectionForm({
     slug: initialData?.slug || "",
     description: initialData?.description || "",
     image: initialData?.image || "",
-    bannerImage: initialData?.bannerImage || "",
     sortOrder: initialData?.sortOrder ?? 0,
     isActive: initialData?.isActive ?? true,
     isFeatured: initialData?.isFeatured ?? false,
@@ -147,8 +227,7 @@ export default function CollectionForm({
       name: form.name.trim(),
       slug: form.slug.trim(),
       description: form.description.trim(),
-      image: form.image.trim(),
-      bannerImage: form.bannerImage.trim(),
+      image: getMediaUrl(form.image),
       sortOrder: Number(form.sortOrder || 0),
       isActive: Boolean(form.isActive),
       isFeatured: Boolean(form.isFeatured),
@@ -243,55 +322,23 @@ export default function CollectionForm({
 
           <SectionCard
             icon={ImageIcon}
-            title="Media"
-            description="Attach collection image and banner image URLs for storefront presentation."
+            title="Collection Image"
+            description="Select collection image from media library."
           >
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <FieldLabel>Image URL</FieldLabel>
-                <input
-                  value={form.image}
-                  onChange={(e) => setField("image", e.target.value)}
-                  placeholder="https://..."
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <FieldLabel>Banner Image URL</FieldLabel>
-                <input
-                  value={form.bannerImage}
-                  onChange={(e) => setField("bannerImage", e.target.value)}
-                  placeholder="https://..."
-                  className={inputClass}
-                />
-              </div>
-
-              {(form.image || form.bannerImage) && (
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="rounded-2xl bg-zinc-50 px-4 py-3">
-                    <p className="text-xs font-medium text-zinc-500">Image</p>
-                    <p className="mt-1 truncate text-sm text-zinc-800">
-                      {form.image || "Not added"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl bg-zinc-50 px-4 py-3">
-                    <p className="text-xs font-medium text-zinc-500">Banner</p>
-                    <p className="mt-1 truncate text-sm text-zinc-800">
-                      {form.bannerImage || "Not added"}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <MediaSelectBox
+              label="Image"
+              value={form.image}
+              onSelect={(media) => setField("image", media)}
+              onRemove={() => setField("image", "")}
+            />
           </SectionCard>
 
-          <CollectionProductCodes
-            value={form.productCodes}
-            onChange={(next) => setField("productCodes", next)}
-            disabled={isSubmitting}
-          />
+          <ProductSelector
+  label="Collection Products"
+  value={form.productCodes}
+  onChange={(next) => setField("productCodes", next)}
+  disabled={isSubmitting}
+/>
         </div>
 
         <div className="space-y-5">
@@ -407,7 +454,9 @@ export default function CollectionForm({
                   Products
                 </p>
                 <p className="mt-1 text-sm font-semibold text-zinc-900">
-                  {Array.isArray(form.productCodes) ? form.productCodes.length : 0}
+                  {Array.isArray(form.productCodes)
+                    ? form.productCodes.length
+                    : 0}
                 </p>
               </div>
             </div>
@@ -415,7 +464,7 @@ export default function CollectionForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-black px-4 py-3.5 text-sm font-medium text-white transition hover:opacity-92 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-black px-4 py-3.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <Loader2 size={16} className="animate-spin" />
