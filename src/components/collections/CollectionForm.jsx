@@ -334,11 +334,11 @@ export default function CollectionForm({
           </SectionCard>
 
           <ProductSelector
-  label="Collection Products"
-  value={form.productCodes}
-  onChange={(next) => setField("productCodes", next)}
-  disabled={isSubmitting}
-/>
+            label="Collection Products"
+            value={form.productCodes}
+            onChange={(next) => setField("productCodes", next)}
+            disabled={isSubmitting}
+          />
         </div>
 
         <div className="space-y-5">
