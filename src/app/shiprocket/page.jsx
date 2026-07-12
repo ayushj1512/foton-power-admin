@@ -111,16 +111,16 @@ export default function ShiprocketPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      <div className="px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="mx-auto flex w-full max-w-none flex-col gap-5">
-          <div className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-6">
+          <div className="rounded-[24px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:rounded-[28px] sm:p-5 lg:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-700">
                   <ShieldCheck size={14} />
                   Shiprocket Admin
                 </div>
-                <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
                   Shipment operations
                 </h1>
                 <p className="mt-1 text-sm text-zinc-500">
@@ -128,7 +128,7 @@ export default function ShiprocketPage() {
                 </p>
               </div>
 
-              <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-4">
+              <div className="grid w-full gap-3 min-[420px]:grid-cols-2 lg:w-auto lg:grid-cols-4">
                 <StatPill
                   icon={MapPin}
                   label="Pickup locations"
@@ -155,7 +155,7 @@ export default function ShiprocketPage() {
 
           <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
             <div className="space-y-5">
-              <div className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-6">
+              <div className="rounded-[24px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:rounded-[28px] sm:p-5 lg:p-6">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
                     <Search size={18} />
@@ -264,7 +264,7 @@ export default function ShiprocketPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 flex flex-wrap gap-3">
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <button
                     type="button"
                     disabled={!currentOrderId || orderLoading}
@@ -317,7 +317,7 @@ export default function ShiprocketPage() {
                 )}
               </div>
 
-              <div className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-6">
+              <div className="rounded-[24px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:rounded-[28px] sm:p-5 lg:p-6">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
                     <Truck size={18} />
@@ -384,7 +384,7 @@ export default function ShiprocketPage() {
                 </div>
               </div>
 
-              <div className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-6">
+              <div className="rounded-[24px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:rounded-[28px] sm:p-5 lg:p-6">
                 <div className="mb-5">
                   <h2 className="text-lg font-semibold text-zinc-950">
                     Serviceability result
@@ -461,7 +461,7 @@ export default function ShiprocketPage() {
             </div>
 
             <div className="space-y-5">
-              <div className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-6">
+              <div className="rounded-[24px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:rounded-[28px] sm:p-5 lg:p-6">
                 <div className="mb-5">
                   <h2 className="text-lg font-semibold text-zinc-950">
                     Shipment snapshot
@@ -499,7 +499,7 @@ export default function ShiprocketPage() {
                 </div>
               </div>
 
-              <div className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-6">
+              <div className="rounded-[24px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:rounded-[28px] sm:p-5 lg:p-6">
                 <div className="mb-5">
                   <h2 className="text-lg font-semibold text-zinc-950">
                     Pickup locations
@@ -554,7 +554,7 @@ export default function ShiprocketPage() {
                 )}
               </div>
 
-              <div className="rounded-[28px] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-6">
+              <div className="rounded-[24px] bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:rounded-[28px] sm:p-5 lg:p-6">
                 <div className="mb-5">
                   <h2 className="text-lg font-semibold text-zinc-950">
                     Raw response preview

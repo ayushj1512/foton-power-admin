@@ -31,7 +31,7 @@ export default function NewCollectionPage() {
 
   return (
     <div className="min-h-screen bg-[#fafafa]">
-      <div className="space-y-6 px-4 py-4 md:px-6 md:py-6">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <section className="overflow-hidden rounded-[32px] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
           <div className="bg-gradient-to-b from-zinc-50 to-white px-5 py-5 md:px-7 md:py-6">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -65,7 +65,7 @@ export default function NewCollectionPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:min-w-[360px]">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:w-auto lg:min-w-[320px]">
                 <div className="rounded-2xl bg-zinc-50 px-4 py-3">
                   <div className="flex items-center gap-2 text-xs font-medium text-zinc-500">
                     <Sparkles size={13} />

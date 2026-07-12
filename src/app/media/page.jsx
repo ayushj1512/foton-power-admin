@@ -68,8 +68,8 @@ export default function MediaPage() {
   }, [items]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] px-4 py-4 md:px-6 md:py-6">
-      <div className="space-y-6">
+    <div className="min-h-screen bg-[#fafafa]">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <section className="overflow-hidden rounded-[32px] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
           <div className="bg-gradient-to-b from-zinc-50 to-white px-5 py-5 md:px-7 md:py-6">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -89,10 +89,10 @@ export default function MediaPage() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex w-full flex-wrap gap-3 lg:w-auto lg:justify-end">
                 <Link
                   href="/media/upload"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-black px-4 text-sm font-medium text-white transition hover:opacity-90"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-black px-4 text-sm font-medium text-white transition hover:opacity-90 sm:w-auto"
                 >
                   <Upload size={16} />
                   Upload Media
@@ -100,7 +100,7 @@ export default function MediaPage() {
 
                 <Link
                   href="/media"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-200"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-200 sm:w-auto"
                 >
                   <Sparkles size={16} />
                   Refresh View
@@ -110,7 +110,7 @@ export default function MediaPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid gap-4 min-[420px]:grid-cols-2 xl:grid-cols-3">
           <StatCard
             icon={Library}
             label="Total Loaded"

@@ -87,8 +87,8 @@ export default function WishlistListPage() {
   const totalItems = wishlist.length;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+    <div className="mx-auto w-full max-w-[1600px] space-y-5 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+      <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
             <div className="rounded-2xl bg-black/5 p-3">
@@ -96,7 +96,7 @@ export default function WishlistListPage() {
             </div>
 
             <div>
-              <h1 className="text-2xl font-bold text-black sm:text-3xl">
+              <h1 className="text-xl font-bold text-black sm:text-2xl">
                 Wishlist List
               </h1>
               <p className="mt-1 text-sm text-black/60">
@@ -115,8 +115,8 @@ export default function WishlistListPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+      <div className="grid gap-4 min-[420px]:grid-cols-2 md:grid-cols-3">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 inline-flex rounded-2xl bg-black/5 p-3">
             <Users className="h-5 w-5" />
           </div>
@@ -126,7 +126,7 @@ export default function WishlistListPage() {
           </h3>
         </div>
 
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 inline-flex rounded-2xl bg-black/5 p-3">
             <Heart className="h-5 w-5" />
           </div>
@@ -134,7 +134,7 @@ export default function WishlistListPage() {
           <h3 className="mt-1 text-2xl font-bold text-black">{totalItems}</h3>
         </div>
 
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 inline-flex rounded-2xl bg-black/5 p-3">
             <FolderOpen className="h-5 w-5" />
           </div>
@@ -159,18 +159,18 @@ export default function WishlistListPage() {
       </div>
 
       {isLoading ? (
-        <div className="rounded-3xl border border-black/10 bg-white p-8 text-sm text-black/60 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-6 text-sm text-black/60 shadow-sm sm:p-8">
           Loading wishlist...
         </div>
       ) : error ? (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-sm text-red-600 shadow-sm">
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-600 shadow-sm sm:p-8">
           {error}
           <p className="mt-2 text-xs text-red-500">
             This page needs a backend route like: GET /api/wishlist/all
           </p>
         </div>
       ) : filteredGroups.length === 0 ? (
-        <div className="rounded-3xl border border-black/10 bg-white p-8 text-sm text-black/60 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-6 text-sm text-black/60 shadow-sm sm:p-8">
           No wishlist groups found.
         </div>
       ) : (
@@ -178,7 +178,7 @@ export default function WishlistListPage() {
           {filteredGroups.map(([customerCode, items]) => (
             <div
               key={customerCode}
-              className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm"
+              className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5"
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>

@@ -14,51 +14,42 @@ export default function RootLayout({ children }) {
   const token = useAdminUserStore((state) => state.token);
   const fetchMe = useAdminUserStore((state) => state.fetchMe);
 
-  const [mounted, setMounted] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
     if (token) fetchMe();
-  }, [mounted, token, fetchMe]);
+  }, [token, fetchMe]);
 
   const hideSidebar = pathname === "/";
   const sidebarWidth = hideSidebar ? 0 : collapsed ? 92 : 280;
 
-  if (!mounted) {
-    return (
-      <html lang="en">
-        <body>
-          <div className="min-h-screen bg-background text-foreground" />
-        </body>
-      </html>
-    );
-  }
-
   return (
     <html lang="en">
       <body>
-        <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
+        <div className="min-h-screen w-full bg-background text-foreground">
           {!hideSidebar ? (
-            <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+            <Sidebar
+              key={pathname}
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              mobileOpen={mobileSidebarOpen}
+              onMobileClose={() => setMobileSidebarOpen(false)}
+            />
           ) : null}
 
           <div
-            className="flex min-h-screen min-w-0 flex-col transition-all duration-200"
+            className="flex min-h-screen min-w-0 flex-col transition-[padding] duration-200 lg:pl-[var(--sidebar-offset)]"
             style={{
-              marginLeft: `${sidebarWidth}px`,
+              "--sidebar-offset": hideSidebar ? "0px" : `${sidebarWidth}px`,
             }}
           >
-            <Header />
+            <Header
+              showMenuButton={!hideSidebar}
+              onMenuClick={() => setMobileSidebarOpen(true)}
+            />
 
-            <main className="flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
-              {children}
-            </main>
-
+            <main className="min-w-0 flex-1">{children}</main>
             <Footer />
           </div>
         </div>

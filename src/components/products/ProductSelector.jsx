@@ -86,7 +86,7 @@ export default function ProductSelector({
   };
 
   return (
-    <section className="rounded-[30px] bg-white p-5 shadow-[0_10px_35px_rgba(0,0,0,0.05)] md:p-6">
+    <section className="rounded-[24px] bg-white p-4 shadow-[0_10px_35px_rgba(0,0,0,0.05)] md:rounded-[30px] md:p-6">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
@@ -103,14 +103,14 @@ export default function ProductSelector({
           </div>
         </div>
 
-        <div className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+        <div className="self-start rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
           {selectedCodes.length} selected
         </div>
       </div>
 
       {selectedProducts.length > 0 ? (
         <div className="mb-5 rounded-3xl bg-[#f7f7f8] p-3">
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
               Selected Products
             </p>

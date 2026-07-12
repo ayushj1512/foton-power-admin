@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useAdminOrderStore } from "@/store/adminOrderStore";
 import OrderCouponDetailsCard from "@/components/orders/OrderCouponDetailsCard";
-import ShiprocketTrackingSyncCard from "@/components/orders/ShiprocketTrackingSyncCard";
 
 const ORDER_STATUSES = [
   "processing",
@@ -175,7 +174,6 @@ export default function OrderDetailsPage() {
     updateOrderPayment,
     updateShipmentDetails,
     clearError,
-    setOrder,
   } = useAdminOrderStore();
 
   const [statusForm, setStatusForm] = useState({
@@ -288,7 +286,7 @@ export default function OrderDetailsPage() {
 
   if (isFetchingOrder) {
     return (
-      <div className="min-h-screen bg-[#f7f7f7] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#f7f7f7] px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5">
           <p className="text-sm text-black/60">Loading order details...</p>
         </div>
@@ -298,7 +296,7 @@ export default function OrderDetailsPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-[#f7f7f7] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#f7f7f7] px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5">
           <p className="text-sm font-medium text-black">Order not found.</p>
           <Link
@@ -313,9 +311,9 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-6">
-        <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+    <div className="min-h-screen bg-[#f7f7f7]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+        <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-black/5 sm:p-5 lg:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <Link
@@ -339,7 +337,7 @@ export default function OrderDetailsPage() {
               </p>
             </div>
 
-            <div className="grid min-w-full grid-cols-2 gap-3 sm:min-w-0 sm:grid-cols-4">
+            <div className="grid w-full grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:w-auto sm:grid-cols-4">
               <div className="rounded-2xl bg-black/[0.03] p-4">
                 <p className="text-xs text-black/50">Payable</p>
                 <p className="mt-1 text-lg font-semibold text-black">
@@ -396,8 +394,8 @@ export default function OrderDetailsPage() {
                         )}
                       </div>
 
-                      <div>
-                        <p className="font-medium text-black">{item.name}</p>
+                      <div className="min-w-0">
+                        <p className="break-words font-medium text-black">{item.name}</p>
                         <div className="mt-1 flex flex-wrap gap-2 text-xs text-black/55">
                           <span>Code: {item.productCode || "—"}</span>
                           <span>SKU: {item.sku || "—"}</span>
@@ -470,7 +468,7 @@ export default function OrderDetailsPage() {
                   ["Tax", formatCurrency(order.taxAmount)],
                   ["Round Off", formatCurrency(order.roundOff)],
                 ].map(([label, value]) => (
-                  <div key={label} className="flex items-center justify-between gap-4">
+                  <div key={label} className="flex items-start justify-between gap-4">
                     <p className="text-black/60">{label}</p>
                     <p className="font-medium text-black">{value}</p>
                   </div>

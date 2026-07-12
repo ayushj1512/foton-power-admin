@@ -229,12 +229,6 @@ export default function OrdersInvoicePage() {
     );
   }, [mergedOrders, previewOrderNumber, selectedOrders, currentListOrders]);
 
-  useEffect(() => {
-    if (!previewOrderNumber && currentListOrders.length) {
-      setPreviewOrderNumber(currentListOrders[0]?.orderNumber || null);
-    }
-  }, [currentListOrders, previewOrderNumber]);
-
   const handleFetchByOrderNumbers = async () => {
     const orderNumbers = sanitizeOrderNumbers(searchInput);
     if (!orderNumbers.length) return;
@@ -390,9 +384,9 @@ const handlePrintSelected = () => {
 
   return (
     <div className="min-h-screen bg-[#f6f6f7] text-black">
-      <div className="px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1600px] px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <div className="flex w-full flex-col gap-5">
-          <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-black/5 sm:p-6">
+          <div className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-black/5 sm:p-5 lg:p-6">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.22em] text-black/45">
@@ -492,7 +486,7 @@ const handlePrintSelected = () => {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <button
                 type="button"
                 onClick={handlePrintSelected}
@@ -523,8 +517,8 @@ const handlePrintSelected = () => {
 
           <div className="grid gap-5 xl:grid-cols-[360px,minmax(0,1fr)]">
             <div className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-black/5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <h2 className="text-base font-semibold">Orders</h2>
                   <p className="mt-1 text-sm text-black/50">
                     Paginated orders with invoice preview
@@ -586,7 +580,7 @@ const handlePrintSelected = () => {
                 )}
               </div>
 
-              <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#fafafa] p-3 ring-1 ring-black/5">
+              <div className="mt-4 flex flex-col gap-3 rounded-2xl bg-[#fafafa] p-3 ring-1 ring-black/5 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-black/50">
                   Showing page {page} of {totalPages}
                 </p>

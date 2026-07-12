@@ -20,15 +20,15 @@ export default function WishlistHomePage() {
   );
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+    <div className="mx-auto w-full max-w-[1600px] space-y-5 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+      <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
         <div className="flex items-start gap-4">
           <div className="rounded-2xl bg-black/5 p-3">
             <Heart className="h-6 w-6 text-black" />
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold text-black sm:text-3xl">
+            <h1 className="text-xl font-bold text-black sm:text-2xl">
               Wishlist
             </h1>
             <p className="mt-1 text-sm text-black/60">
@@ -40,7 +40,7 @@ export default function WishlistHomePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-2xl bg-black/5 p-3">
               <Search className="h-5 w-5" />
@@ -82,7 +82,7 @@ export default function WishlistHomePage() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-2xl bg-black/5 p-3">
               <FolderHeart className="h-5 w-5" />
@@ -107,8 +107,8 @@ export default function WishlistHomePage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+      <div className="grid gap-4 min-[420px]:grid-cols-2 md:grid-cols-3">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 inline-flex rounded-2xl bg-black/5 p-3">
             <Users className="h-5 w-5" />
           </div>
@@ -120,7 +120,7 @@ export default function WishlistHomePage() {
           </p>
         </div>
 
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 inline-flex rounded-2xl bg-black/5 p-3">
             <Heart className="h-5 w-5" />
           </div>
@@ -132,7 +132,7 @@ export default function WishlistHomePage() {
           </p>
         </div>
 
-        <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-3 inline-flex rounded-2xl bg-black/5 p-3">
             <List className="h-5 w-5" />
           </div>

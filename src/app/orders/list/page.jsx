@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import {
   CheckSquare,
   Loader2,
@@ -90,7 +90,7 @@ function SelectionButton({ checked, onClick }) {
   );
 }
 
-export default function OrdersListPage() {
+function OrdersListPageContent() {
   const searchParams = useSearchParams();
 
   const {
@@ -144,12 +144,6 @@ export default function OrdersListPage() {
 
     fetchOrders(nextFilters).catch(() => {});
   }, [fetchOrders, searchParams]);
-
-  useEffect(() => {
-    setSelectedIds((prev) =>
-      prev.filter((id) => (orders || []).some((order) => order?._id === id))
-    );
-  }, [orders]);
 
   const totalOrdersText = useMemo(
     () => `${pagination?.total || 0} orders`,
@@ -354,9 +348,9 @@ export default function OrdersListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full flex-col gap-6">
-        <div className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-black/5">
+    <div className="min-h-screen bg-[#f7f7f7]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+        <div className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-black/5 sm:p-5 lg:p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/45">
@@ -375,7 +369,7 @@ export default function OrdersListPage() {
 
           <form
             onSubmit={handleSearch}
-            className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-12"
+            className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-12"
           >
             <div className="xl:col-span-3">
               <Input
@@ -519,10 +513,10 @@ export default function OrdersListPage() {
               </Select>
             </div>
 
-            <div className="xl:col-span-12 flex flex-wrap gap-2">
+            <div className="xl:col-span-12 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <button
                 type="submit"
-                className="inline-flex h-11 items-center gap-2 rounded-2xl bg-black px-4 text-sm font-medium text-white transition hover:opacity-90"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-black px-4 text-sm font-medium text-white transition hover:opacity-90"
               >
                 <Search className="h-4 w-4" />
                 Apply Filters
@@ -531,7 +525,7 @@ export default function OrdersListPage() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-medium text-black ring-1 ring-black/10 transition hover:bg-black/[0.03]"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-medium text-black ring-1 ring-black/10 transition hover:bg-black/[0.03]"
               >
                 <RotateCcw className="h-4 w-4" />
                 Reset
@@ -540,7 +534,7 @@ export default function OrdersListPage() {
           </form>
         </div>
 
-        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-black/5">
+        <div className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-black/5 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-black/45">
@@ -554,7 +548,7 @@ export default function OrdersListPage() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex w-full flex-wrap gap-2 lg:w-auto lg:justify-end">
               <SelectionButton
                 checked={areAllTrackableSelected}
                 onClick={toggleSelectAllTrackable}
@@ -640,7 +634,7 @@ export default function OrdersListPage() {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-white px-5 py-4 shadow-sm ring-1 ring-black/5">
+        <div className="flex flex-col gap-3 rounded-[24px] bg-white px-4 py-4 shadow-sm ring-1 ring-black/5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <p className="text-sm text-black/50">
             Page {currentPage} of {totalPages}
           </p>
@@ -655,7 +649,7 @@ export default function OrdersListPage() {
               Previous
             </button>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="hidden flex-wrap gap-2 sm:flex">
               {visiblePages.map((page) => (
                 <button
                   key={page}
@@ -684,5 +678,23 @@ export default function OrdersListPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrdersListPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#f7f7f7]">
+          <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+            <div className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-black/5 sm:p-5 lg:p-6">
+              <p className="text-sm text-black/55">Loading orders...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <OrdersListPageContent />
+    </Suspense>
   );
 }

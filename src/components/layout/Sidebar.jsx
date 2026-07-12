@@ -9,7 +9,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Layers3,
-  Menu,
   X,
 } from "lucide-react";
 import { SIDEBAR_ITEMS } from "@/config/sidebarConfig";
@@ -164,9 +163,10 @@ export default function Sidebar({
   brandName = "FOTON POWER",
   collapsed = false,
   setCollapsed = () => {},
+  mobileOpen = false,
+  onMobileClose = () => {},
 }) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const defaultOpen = useMemo(() => {
     const map = {};
@@ -183,10 +183,6 @@ export default function Sidebar({
   const [openMenus, setOpenMenus] = useState(defaultOpen);
 
   useEffect(() => {
-    setOpenMenus((prev) => ({ ...prev, ...defaultOpen }));
-  }, [defaultOpen]);
-
-  useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
 
     return () => {
@@ -201,35 +197,8 @@ export default function Sidebar({
     }));
   };
 
-  const closeMobile = () => setMobileOpen(false);
-
   return (
     <>
-      <div className="sticky top-0 z-40 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3 lg:hidden">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-black text-white">
-            <Layers3 size={18} />
-          </div>
-
-          <div className="min-w-0">
-            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-black/45">
-              Admin Panel
-            </p>
-            <h2 className="truncate text-sm font-semibold text-black">
-              {brandName}
-            </h2>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white text-black"
-        >
-          <Menu size={18} />
-        </button>
-      </div>
-
       <aside
         className={`fixed left-0 top-0 z-30 hidden h-screen border-r border-black/10 bg-white transition-all duration-200 lg:flex lg:flex-col ${
           collapsed ? "w-[92px]" : "w-[280px]"
@@ -297,16 +266,19 @@ export default function Sidebar({
       </aside>
 
       {mobileOpen ? (
-        <div
+        <button
+          type="button"
+          aria-label="Close navigation menu"
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] lg:hidden"
-          onClick={closeMobile}
+          onClick={onMobileClose}
         />
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-[60] w-[86%] max-w-[320px] transform border-r border-black/10 bg-white transition-transform duration-200 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-[60] w-[86vw] max-w-[320px] transform border-r border-black/10 bg-white transition-transform duration-200 lg:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        aria-hidden={!mobileOpen}
       >
         <div className="flex items-center justify-between border-b border-black/10 px-4 py-4">
           <div className="flex min-w-0 items-center gap-3">
@@ -326,19 +298,20 @@ export default function Sidebar({
 
           <button
             type="button"
-            onClick={closeMobile}
+            onClick={onMobileClose}
+            aria-label="Close navigation menu"
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white text-black"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="h-[calc(100vh-81px)] overflow-y-auto px-3 py-4">
+        <div className="h-[calc(100dvh-81px)] overflow-y-auto px-3 py-4">
           <SidebarNav
             pathname={pathname}
             openMenus={openMenus}
             toggleMenu={toggleMenu}
-            onNavigate={closeMobile}
+            onNavigate={onMobileClose}
           />
         </div>
       </aside>

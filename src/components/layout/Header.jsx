@@ -3,20 +3,22 @@
 import Link from "next/link";
 import { Menu, User } from "lucide-react";
 
-export default function AdminHeader({ onMenuClick }) {
+export default function AdminHeader({ onMenuClick, showMenuButton = true }) {
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur">
-      <div className="px-4 py-4 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-center rounded-[28px] bg-white px-4 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.05)]">
-          
+    <header className="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur">
+      <div className="px-3 py-3 sm:px-4 lg:px-6">
+        <div className="relative flex min-h-[64px] items-center justify-center rounded-[22px] border border-black/5 bg-white px-4 py-3 shadow-[0_8px_30px_rgba(0,0,0,0.05)] sm:px-5">
           {/* left - menu */}
-          <button
-            type="button"
-            onClick={onMenuClick}
-            className="absolute left-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 transition hover:bg-zinc-200 lg:hidden"
-          >
-            <Menu size={19} />
-          </button>
+          {showMenuButton ? (
+            <button
+              type="button"
+              onClick={onMenuClick}
+              aria-label="Open navigation menu"
+              className="absolute left-3 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-zinc-50 text-zinc-700 transition hover:bg-zinc-100 lg:hidden sm:left-4"
+            >
+              <Menu size={19} />
+            </button>
+          ) : null}
 
           {/* center - logo */}
           <div className="flex items-center justify-center">
@@ -30,7 +32,8 @@ export default function AdminHeader({ onMenuClick }) {
           {/* right - profile */}
           <Link
             href="/profile"
-            className="absolute right-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 transition hover:bg-black hover:text-white"
+            aria-label="Open profile"
+            className="absolute right-3 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-zinc-50 text-zinc-700 transition hover:bg-black hover:text-white sm:right-4"
           >
             <User size={18} />
           </Link>

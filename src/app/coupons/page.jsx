@@ -139,16 +139,16 @@ export default function CouponsPage() {
   const empty = !loading && coupons.length === 0;
 
   return (
-    <div className="min-h-screen bg-[#f6f6f4] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <div className="space-y-6">
-        <section className="rounded-[28px] bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 px-6 py-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:px-7 sm:py-7">
+    <div className="min-h-screen bg-[#f6f6f4]">
+      <div className="mx-auto w-full max-w-[1600px] space-y-5 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+        <section className="rounded-[24px] bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 px-4 py-5 text-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:rounded-[28px] sm:px-6 sm:py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80 ring-1 ring-white/10">
                 <TicketPercent className="h-3.5 w-3.5" />
                 Coupons
               </div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
                 Premium coupon management
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-white/70 sm:text-base">
@@ -156,10 +156,10 @@ export default function CouponsPage() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex w-full flex-wrap gap-3 lg:w-auto lg:justify-end">
               <button
                 onClick={() => fetchCoupons().catch(() => {})}
-                className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/15"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 text-sm font-medium text-white transition hover:bg-white/15 sm:w-auto"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                 Refresh
@@ -167,7 +167,7 @@ export default function CouponsPage() {
 
               <Link
                 href="/coupons/add"
-                className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100 sm:w-auto"
               >
                 <Plus className="h-4 w-4" />
                 Add coupon
@@ -218,7 +218,7 @@ export default function CouponsPage() {
             <select
               value={filters.status}
               onChange={(e) => setFilters({ status: e.target.value })}
-              className="h-12 rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-2"
+              className="h-12 w-full rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-2"
             >
               <option value="">All status</option>
               <option value="draft">Draft</option>
@@ -231,7 +231,7 @@ export default function CouponsPage() {
             <select
               value={filters.discountType}
               onChange={(e) => setFilters({ discountType: e.target.value })}
-              className="h-12 rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-2"
+              className="h-12 w-full rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-2"
             >
               <option value="">All discount types</option>
               <option value="percentage">Percentage</option>
@@ -241,7 +241,7 @@ export default function CouponsPage() {
             <select
               value={filters.isHidden}
               onChange={(e) => setFilters({ isHidden: e.target.value })}
-              className="h-12 rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-2"
+              className="h-12 w-full rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-2"
             >
               <option value="">Visibility</option>
               <option value="false">Visible</option>
@@ -255,7 +255,7 @@ export default function CouponsPage() {
                   setSearchText("");
                   setTimeout(() => fetchCoupons().catch(() => {}), 0);
                 }}
-                className="h-12 flex-1 rounded-2xl bg-zinc-100 px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-200"
+                className="h-12 w-full flex-1 rounded-2xl bg-zinc-100 px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-200"
               >
                 Reset
               </button>
@@ -447,7 +447,7 @@ export default function CouponsPage() {
               coupons.map((coupon) => (
                 <div
                   key={coupon._id}
-                  className="rounded-3xl bg-zinc-50 p-4 ring-1 ring-zinc-200/70"
+                  className="rounded-[24px] bg-zinc-50 p-3 ring-1 ring-zinc-200/70 sm:p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -467,7 +467,7 @@ export default function CouponsPage() {
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 text-sm">
                     <div className="rounded-2xl bg-white p-3">
                       <p className="text-xs uppercase tracking-[0.16em] text-zinc-400">
                         Discount

@@ -60,7 +60,7 @@ const textareaClass =
 
 function SectionCard({ icon: Icon, title, description, children }) {
   return (
-    <section className="rounded-[30px] bg-white p-5 shadow-[0_10px_35px_rgba(0,0,0,0.05)] md:p-6">
+    <section className="rounded-[24px] bg-white p-4 shadow-[0_10px_35px_rgba(0,0,0,0.05)] md:rounded-[30px] md:p-6">
       <div className="mb-5 flex items-start gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
           <Icon size={18} />
@@ -81,7 +81,7 @@ function SectionCard({ icon: Icon, title, description, children }) {
 
 function FieldLabel({ children, hint }) {
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-3">
       <label className="text-sm font-medium text-zinc-800">{children}</label>
       {hint ? <span className="text-xs text-zinc-400">{hint}</span> : null}
     </div>
@@ -125,7 +125,7 @@ function MediaSelectBox({ label, value, onSelect, onRemove }) {
         )}
 
         {url ? (
-          <div className="mt-3 flex items-center justify-between gap-3">
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="min-w-0 truncate text-xs text-zinc-500">{url}</p>
 
             <button
@@ -245,7 +245,7 @@ export default function CollectionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_380px]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,380px)]">
         <div className="space-y-5">
           <SectionCard
             icon={Layers3}
@@ -413,7 +413,7 @@ export default function CollectionForm({
             </div>
           </SectionCard>
 
-          <div className="sticky top-24 rounded-[30px] bg-white p-5 shadow-[0_12px_40px_rgba(0,0,0,0.07)] md:p-6">
+          <div className="rounded-[24px] bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.07)] md:rounded-[30px] md:p-6 xl:sticky xl:top-24">
             <div className="mb-5">
               <div className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-zinc-600">
                 <Save size={12} />

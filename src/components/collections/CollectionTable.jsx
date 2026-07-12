@@ -42,7 +42,7 @@ export default function CollectionTable({
 }) {
   if (loading) {
     return (
-      <div className="rounded-[30px] bg-white p-12 shadow-[0_10px_35px_rgba(0,0,0,0.05)]">
+      <div className="rounded-[24px] bg-white p-6 shadow-[0_10px_35px_rgba(0,0,0,0.05)] sm:rounded-[30px] sm:p-12">
         <div className="flex items-center justify-center gap-3 text-sm text-zinc-500">
           <Loader2 size={18} className="animate-spin" />
           Loading collections...
@@ -53,7 +53,7 @@ export default function CollectionTable({
 
   if (!collections.length) {
     return (
-      <div className="rounded-[30px] bg-white p-12 text-center shadow-[0_10px_35px_rgba(0,0,0,0.05)]">
+      <div className="rounded-[24px] bg-white p-6 text-center shadow-[0_10px_35px_rgba(0,0,0,0.05)] sm:rounded-[30px] sm:p-12">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-600">
           <Layers3 size={20} />
         </div>

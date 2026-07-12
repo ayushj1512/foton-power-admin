@@ -16,7 +16,7 @@ import {
 import { useAdminUserStore } from "@/store/adminAuthStore";
 
 const cardClass =
-  "rounded-[30px] bg-white p-5 shadow-[0_10px_35px_rgba(0,0,0,0.05)] md:p-6";
+  "rounded-[24px] bg-white p-4 shadow-[0_10px_35px_rgba(0,0,0,0.05)] md:rounded-[30px] md:p-6";
 
 const inputClass =
   "w-full rounded-2xl bg-[#f7f7f8] px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:bg-white focus:shadow-[0_0_0_1px_rgba(24,24,27,0.14),0_8px_30px_rgba(0,0,0,0.05)]";
@@ -123,8 +123,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] px-4 py-4 md:px-6 md:py-6">
-      <div className="space-y-6">
+    <div className="min-h-screen bg-[#fafafa]">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         <section className="overflow-hidden rounded-[32px] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
           <div className="bg-gradient-to-b from-zinc-50 to-white px-5 py-5 md:px-7 md:py-6">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -187,7 +187,7 @@ export default function ProfilePage() {
           </div>
         ) : null}
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,420px)]">
           <div className="space-y-6">
             <section className={cardClass}>
               <div className="mb-5 flex items-start gap-3">
@@ -272,7 +272,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-6">
-            <section className={`${cardClass} sticky top-24`}>
+            <section className={`${cardClass} xl:sticky xl:top-24`}>
               <div className="mb-5 flex items-start gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
                   <LockKeyhole size={18} />

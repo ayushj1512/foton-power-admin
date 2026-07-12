@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -125,7 +125,7 @@ const Switch = ({ checked, onChange, label }) => (
   </button>
 );
 
-export default function AddCouponPage() {
+function AddCouponPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const couponId = searchParams.get("id");
@@ -515,5 +515,21 @@ export default function AddCouponPage() {
         )}
       </form>
     </div>
+  );
+}
+
+export default function AddCouponPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#f6f6f4] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+          <div className="rounded-[28px] bg-white px-6 py-16 shadow-[0_10px_30px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
+            <span className="text-sm text-zinc-500">Loading coupon form...</span>
+          </div>
+        </div>
+      }
+    >
+      <AddCouponPageContent />
+    </Suspense>
   );
 }

@@ -145,7 +145,7 @@ export default function OrderListRow({
         } md:items-center`}
       >
         {selectable ? (
-          <div>
+          <div className="flex items-start md:items-center">
             <SelectionButton
               checked={selected}
               onClick={() => onToggleSelect?.(order?._id)}
@@ -154,7 +154,7 @@ export default function OrderListRow({
         ) : null}
 
         <div>
-          <p className="text-sm font-semibold text-black">
+          <p className="break-all text-sm font-semibold text-black md:break-normal">
             {order?.orderNumber || "—"}
           </p>
           <p className="mt-1 text-[11px] text-black/45">
@@ -163,10 +163,10 @@ export default function OrderListRow({
         </div>
 
         <div>
-          <p className="truncate text-sm font-medium text-black">
+          <p className="break-words text-sm font-medium text-black md:truncate">
             {customerName}
           </p>
-          <p className="mt-1 truncate text-[11px] text-black/45">
+          <p className="mt-1 break-all text-[11px] text-black/45 md:truncate">
             {order?.customer?.phone || order?.customer?.email || "—"}
           </p>
         </div>
@@ -315,7 +315,7 @@ export default function OrderListRow({
                     Quick Info
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <InfoBlock label="Customer" value={customerName} />
                     <InfoBlock
                       label="Customer Code"
@@ -334,7 +334,7 @@ export default function OrderListRow({
                     Shiprocket
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <InfoBlock
                       label="Booked"
                       value={shiprocket?.isBooked ? "Yes" : "No"}

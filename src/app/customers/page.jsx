@@ -79,8 +79,8 @@ export default function CustomersPage() {
   );
 
   return (
-    <section className="min-h-screen bg-[#fafafa] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="space-y-6">
+    <section className="min-h-screen bg-[#fafafa]">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
         {/* header */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -97,7 +97,7 @@ export default function CustomersPage() {
 
           <button
             onClick={() => fetchCustomers()}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-neutral-950 px-4 text-sm font-medium text-white transition hover:opacity-90"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-neutral-950 px-4 text-sm font-medium text-white transition hover:opacity-90 sm:w-auto"
           >
             <RefreshCcw size={16} />
             Refresh
@@ -143,7 +143,7 @@ export default function CustomersPage() {
 
         {/* filters */}
         <div className="rounded-[28px] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_14px_34px_rgba(0,0,0,0.03)] sm:p-5">
-          <div className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_180px_150px]">
             <div className="relative">
               <Search
                 size={17}
@@ -161,7 +161,7 @@ export default function CustomersPage() {
             <select
               value={filters.isActive}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-12 rounded-2xl bg-neutral-50 px-4 text-sm text-neutral-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-neutral-200"
+              className="h-12 w-full rounded-2xl bg-neutral-50 px-4 text-sm text-neutral-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-neutral-200"
             >
               <option value="all">All Status</option>
               <option value="active">Active Only</option>
@@ -174,7 +174,7 @@ export default function CustomersPage() {
                 const nextLimit = Number(e.target.value) || 10;
                 useAdminCustomerStore.getState().setLimit(nextLimit);
               }}
-              className="h-12 rounded-2xl bg-neutral-50 px-4 text-sm text-neutral-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-neutral-200"
+              className="h-12 w-full rounded-2xl bg-neutral-50 px-4 text-sm text-neutral-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-neutral-200"
             >
               <option value={10}>10 / page</option>
               <option value={20}>20 / page</option>
@@ -408,7 +408,7 @@ export default function CustomersPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setPage(Math.max((pagination.page || 1) - 1, 1))}
               disabled={(pagination.page || 1) <= 1 || loading}

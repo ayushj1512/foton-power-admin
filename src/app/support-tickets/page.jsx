@@ -132,16 +132,16 @@ export default function SupportTicketsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f6f4] px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <div className="space-y-6">
-        <section className="rounded-[30px] bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 px-6 py-6 text-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:px-7 sm:py-7">
+    <div className="min-h-screen bg-[#f6f6f4]">
+      <div className="mx-auto w-full max-w-[1600px] space-y-5 px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+        <section className="rounded-[24px] bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 px-4 py-5 text-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] sm:rounded-[30px] sm:px-6 sm:py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80 ring-1 ring-white/10">
                 <LifeBuoy className="h-3.5 w-3.5" />
                 Support tickets
               </div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
                 Customer support workspace
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-white/70 sm:text-base">
@@ -154,7 +154,7 @@ export default function SupportTicketsPage() {
                 clearMessages();
                 fetchTickets({ search, status }).catch(() => {});
               }}
-              className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/15"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 text-sm font-medium text-white transition hover:bg-white/15 sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               Refresh
@@ -162,7 +162,7 @@ export default function SupportTicketsPage() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 xl:grid-cols-4">
           <StatCard icon={Ticket} title="Loaded tickets" value={stats.total} hint="Current filtered result" />
           <StatCard icon={AlertCircle} title="Open" value={stats.open} hint="Needs attention" />
           <StatCard icon={Loader2} title="In progress" value={stats.progress} hint="Being handled" />
@@ -196,7 +196,7 @@ export default function SupportTicketsPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="h-12 rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-3"
+              className="h-12 w-full rounded-2xl bg-zinc-50 px-4 text-sm text-zinc-900 outline-none ring-1 ring-zinc-200 focus:bg-white focus:ring-zinc-300 lg:col-span-3"
             >
               {STATUS_OPTIONS.map((item) => (
                 <option key={item.value || "all"} value={item.value}>
@@ -346,9 +346,9 @@ export default function SupportTicketsPage() {
               </div>
             ) : (
               tickets.map((ticket) => (
-                <div
+              <div
                   key={ticket._id}
-                  className="rounded-3xl bg-zinc-50 p-4 ring-1 ring-zinc-200/70"
+                  className="rounded-[24px] bg-zinc-50 p-3 ring-1 ring-zinc-200/70 sm:p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -379,7 +379,7 @@ export default function SupportTicketsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:flex-wrap">
                     <Link
                       href={`/support-tickets/${ticket._id}`}
                       className="rounded-2xl bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
